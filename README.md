@@ -12,6 +12,13 @@
   <em>Intelligent travel recommendations, seamless booking experience, and personalized itinerary planning powered by cutting-edge AI</em>
 </p>
 
+<p align="center">
+  <strong>🎨 VIEW PROFESSIONAL README 🎨</strong><br/>
+  <a href="https://ankitaryan07.github.io/GO-TRAVEL/GO-TRAVEL_README.html">
+    <img src="https://img.shields.io/badge/Click%20Here-Professional%20README%20with%20Screenshots-FF8C42?style=for-the-badge" alt="Professional README" />
+  </a>
+</p>
+
 ---
 
 ## 📋 Project Information
