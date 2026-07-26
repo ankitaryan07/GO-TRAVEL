@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+bcrypt
+requests
+jinja2
+razorpay
+python-dotenv
+sendgrid
