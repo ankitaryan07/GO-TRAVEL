@@ -1,0 +1,1 @@
+Need to add GET /api/auth/dev-otp?email=xxx endpoint for test mode OTP display
