@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GO-TRAVEL - AI-Powered Travel Booking Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF8C42;
+            --dark: #1a2847;
+            --dark-light: #2d3e5f;
+            --light: #f8f9fa;
+            --green: #4ade80;
+            --blue: #3b82f6;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: #ffffff;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 140, 66, 0.1);
+            border-radius: 50%;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            background: var(--primary);
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+
+        .header-subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .badge-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .badge.success {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        /* ========== CONTAINER ========== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ========== SECTIONS ========== */
+        section {
+            padding: 80px 0;
+            position: relative;
+        }
+
+        section.alt {
+            background: var(--light);
+        }
+
+        .section-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark);
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 1.1em;
+            margin-bottom: 60px;
+        }
+
+        /* ========== OVERVIEW SECTION ========== */
+        .overview-content {
+            background: linear-gradient(135deg, rgba(26, 40, 71, 0.95) 0%, rgba(45, 62, 95, 0.95) 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 140, 66, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overview-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 140, 66, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .overview-text {
+            position: relative;
+            z-index: 1;
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        /* ========== FEATURES ========== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 16px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(255, 140, 66, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            color: var(--dark);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        /* ========== TECH STACK ========== */
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-top: 50px;
+        }
+
+        .tech-category {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tech-category h4 {
+            color: var(--primary);
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .tech-list {
+            list-style: none;
+        }
+
+        .tech-list li {
+            color: var(--text-dark);
+            padding: 6px 0;
+            font-size: 0.95em;
+        }
+
+        .tech-list li:before {
+            content: "▸ ";
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* ========== SCREENSHOTS ========== */
+        .screenshots-container {
+            display: grid;
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .screenshot-item {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .screenshot-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 12px 32px rgba(255, 140, 66, 0.15);
+        }
+
+        .screenshot-label {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            padding: 15px 25px;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .screenshot-label span {
+            font-size: 1.3em;
+        }
+
+        .screenshot-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: linear-gradient(135deg, #f0f1f3 0%, #e8eaed 100%);
+        }
+
+        /* ========== DATABASE SCHEMA ========== */
+        .db-tables {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        .db-table {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .db-table::before {
+            content: '🗄️';
+            display: block;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .db-table:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #fff9f5 0%, #fffaf7 100%);
+        }
+
+        .db-table h4 {
+            color: var(--dark);
+            font-size: 1.05em;
+            font-weight: 600;
+        }
+
+        /* ========== API ENDPOINTS ========== */
+        .endpoints-group {
+            margin: 40px 0;
+        }
+
+        .endpoint-category {
+            margin-bottom: 30px;
+        }
+
+        .endpoint-category h4 {
+            color: var(--primary);
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+        }
+
+        .endpoint-list {
+            list-style: none;
+            display: grid;
+            gap: 12px;
+        }
+
+        .endpoint-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .endpoint-item:hover {
+            background: var(--light);
+            border-color: var(--primary);
+        }
+
+        .method-badge {
+            display: inline-block;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .method-post { background: #dbeafe; color: #1e40af; }
+        .method-get { background: #dcfce7; color: #15803d; }
+        .method-put { background: #fef08a; color: #854d0e; }
+        .method-delete { background: #fee2e2; color: #991b1b; }
+
+        .endpoint-path {
+            color: var(--text-dark);
+            flex: 1;
+            word-break: break-all;
+        }
+
+        /* ========== HIGHLIGHTS ========== */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .highlight-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            border: 2px solid var(--border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .highlight-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 30px rgba(255, 140, 66, 0.1);
+        }
+
+        .highlight-number {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .highlight-label {
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .highlight-desc {
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        /* ========== INFO TABLES ========== */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-table th {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .info-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dark);
+        }
+
+        .info-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .info-table tr:hover td {
+            background: var(--light);
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 100px;
+        }
+
+        footer p {
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+
+        .heart {
+            color: #ff4757;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2em; }
+            .section-title { font-size: 1.8em; }
+            .header { padding: 50px 20px; }
+            section { padding: 50px 0; }
+            .features-grid { grid-template-columns: 1fr; }
+            .tech-stack { grid-template-columns: 1fr; }
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        /* ========== CODE BLOCK ========== */
+        .code-block {
+            background: var(--dark);
+            color: #a1d96f;
+            padding: 25px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 140, 66, 0.2);
+            line-height: 1.6;
+        }
+
+        .code-label {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        /* ========== CTAs ========== */
+        .cta-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(255, 140, 66, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light);
+        }
+
+        /* ========== DIVIDER ========== */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+            margin: 60px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== HEADER ========== -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">✈️</div>
+                <h1>GO-TRAVEL</h1>
+            </div>
+            <p class="header-subtitle">🤖 AI-Powered Travel Booking Platform</p>
+            <p style="font-size: 1em; opacity: 0.85; margin-top: 20px;">
+                Intelligent travel recommendations, seamless booking experience, and personalized itinerary planning powered by cutting-edge AI.
+            </p>
+            <div class="badge-group">
+                <span class="badge">🎓 MCA Final Year Project</span>
+                <span class="badge">⚡ FastAPI + SQLite</span>
+                <span class="badge">🧠 CrewAI + Llama 3</span>
+                <span class="badge success">✅ Production Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========== OVERVIEW ========== -->
+    <section class="container">
+        <div class="overview-content">
+            <h2 style="font-size: 2em; margin-bottom: 25px;">📌 Project Overview</h2>
+            <div class="overview-text">
+                <strong>GO-TRAVEL</strong> is a comprehensive full-stack travel booking platform that combines modern web development with cutting-edge AI. Built as an MCA final-year project, it demonstrates expertise in backend architecture, intelligent recommendation systems, real-time payment processing, and user-centric design. The platform enables users to discover destinations, book accommodations, plan itineraries with AI assistance, and complete secure payments.
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== PROJECT INFO ========== -->
+    <section class="container alt" style="padding: 60px 0;">
+        <div class="container">
+            <table class="info-table">
+                <thead>
+                    <tr>
+                        <th>📋 Detail</th>
+                        <th>📊 Information</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Project Name</strong></td>
+                        <td>GO-TRAVEL - AI-Powered Travel Booking Platform</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Student</strong></td>
+                        <td>Ankit Aryan</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enrollment</strong></td>
+                        <td>24326711015</td>
+                    </tr>
+                    <tr>
+                        <td><strong>College</strong></td>
+                        <td>CIMAGE Center of Digital Technology and Entrepreneurship, Patna</td>
+                    </tr>
+                    <tr>
+                        <td><strong>University</strong></td>
+                        <td>Aryabhatta Knowledge University, Patna</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Faculty Guide</strong></td>
+                        <td>Prof. Dr. Amit Kumar Shukla</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Course</strong></td>
+                        <td>Master of Computer Applications (MCA)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Session</strong></td>
+                        <td>2024-2026</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td>✅ Completed & Production Ready</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ========== KEY FEATURES ========== -->
+    <section class="container">
+        <h2 class="section-title">✨ Key Features</h2>
+        <p class="section-subtitle">Powerful capabilities that make travel planning effortless</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered Recommendations</h3>
+                <p>Multi-agent CrewAI system with Researcher & Planner agents for intelligent, personalized travel suggestions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Smart Destination Search</h3>
+                <p>Advanced location-based search with sophisticated filters and personalized preference matching</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✈️</div>
+                <h3>Flight & Hotel Integration</h3>
+                <p>Seamless real-time availability and integrated booking system for flights and accommodations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💳</div>
+                <h3>Secure Payment Processing</h3>
+                <p>Razorpay integration ensuring safe, reliable transactions with multiple payment methods</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📧</div>
+                <h3>Email Notifications</h3>
+                <p>SendGrid integration for instant booking confirmations, itinerary details, and personalized updates</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3>Robust Authentication</h3>
+                <p>OTP-based verification and JWT token management for secure user sessions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>User Dashboard</h3>
+                <p>Comprehensive dashboard to track bookings, manage profiles, and view complete travel history</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👨‍💼</div>
+                <h3>Admin Panel</h3>
+                <p>Full administrative dashboard for system management, analytics, and comprehensive oversight</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== HOMEPAGE SCREENSHOT ========== -->
+    <section class="container alt">
+        <h2 class="section-title">🏠 Platform Showcase</h2>
+        <p class="section-subtitle">Explore the GO-TRAVEL user interface</p>
+        
+        <div class="screenshots-container">
+            <!-- Landing Page -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🌟</span> AI-Powered Homepage
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_21_05_AM.png" alt="GO-TRAVEL Landing Page" class="screenshot-img">
+            </div>
+
+            <!-- Search & Destinations -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🎯</span> Destination Showcase & Search
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_23_14_AM.png" alt="Popular Destinations" class="screenshot-img">
+            </div>
+
+            <!-- Find Hotels -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🏨</span> Find Hotels - Browse & Book
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_22_16_AM.png" alt="Find Hotels" class="screenshot-img">
+            </div>
+
+            <!-- AI Trip Planning -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>✈️</span> AI-Powered Trip Planning
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_22_51_AM.png" alt="Plan New Trip with AI" class="screenshot-img">
+            </div>
+
+            <!-- AI Assistant Chat -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>💬</span> AI Travel Assistant - Smart Chat
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_23_39_AM.png" alt="AI Assistant" class="screenshot-img">
+            </div>
+
+            <!-- User Profile Management -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🔐</span> Secure Password Management
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_23_01_AM.png" alt="Change Password" class="screenshot-img">
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>💳</span> Payment Methods & Card Management
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_24_27_AM.png" alt="Payment Methods" class="screenshot-img">
+            </div>
+
+            <!-- Date Selection -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>📅</span> Interactive Date Picker
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_24_37_AM.png" alt="Select Dates" class="screenshot-img">
+            </div>
+
+            <!-- Date Selection Full -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>📆</span> Date Range Selection - Booking Confirmation
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_24_48_AM.png" alt="Date Selection" class="screenshot-img">
+            </div>
+
+            <!-- Payment Checkout -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🛒</span> Secure Razorpay Checkout
+                </div>
+                <img src="file:///mnt/user-data/uploads/Screenshot_2026-07-26_at_8_23_01_AM.png" alt="Payment Checkout" class="screenshot-img">
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== TECH STACK ========== -->
+    <section class="container">
+        <h2 class="section-title">🛠️ Technology Stack</h2>
+        <p class="section-subtitle">Modern, production-grade technologies</p>
+
+        <div class="tech-stack">
+            <div class="tech-category">
+                <h4>💻 Frontend</h4>
+                <ul class="tech-list">
+                    <li>HTML5</li>
+                    <li>CSS3 (Advanced)</li>
+                    <li>JavaScript (Vanilla)</li>
+                    <li>Responsive Design</li>
+                </ul>
+            </div>
+            <div class="tech-category">
+                <h4>🔧 Backend & Database</h4>
+                <ul class="tech-list">
+                    <li>FastAPI</li>
+                    <li>SQLite (11 Tables)</li>
+                    <li>SQLAlchemy ORM</li>
+                    <li>Python 3.8+</li>
+                </ul>
+            </div>
+            <div class="tech-category">
+                <h4>🧠 AI & Integrations</h4>
+                <ul class="tech-list">
+                    <li>CrewAI</li>
+                    <li>Llama 3 (Ollama)</li>
+                    <li>Razorpay API</li>
+                    <li>SendGrid SMTP</li>
+                </ul>
+            </div>
+            <div class="tech-category">
+                <h4>🔒 Security & Auth</h4>
+                <ul class="tech-list">
+                    <li>OTP Authentication</li>
+                    <li>JWT Tokens</li>
+                    <li>bcrypt Hashing</li>
+                    <li>CORS Protection</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="highlights-grid" style="margin-top: 50px;">
+            <div class="highlight-box">
+                <div class="highlight-number">11</div>
+                <div class="highlight-label">Database Tables</div>
+                <div class="highlight-desc">Normalized, optimized relational schema</div>
+            </div>
+            <div class="highlight-box">
+                <div class="highlight-number">32+</div>
+                <div class="highlight-label">REST API Endpoints</div>
+                <div class="highlight-desc">Comprehensive, well-documented APIs</div>
+            </div>
+            <div class="highlight-box">
+                <div class="highlight-number">2</div>
+                <div class="highlight-label">AI Agents</div>
+                <div class="highlight-desc">Researcher & Planner CrewAI agents</div>
+            </div>
+            <div class="highlight-box">
+                <div class="highlight-number">100%</div>
+                <div class="highlight-label">Responsive</div>
+                <div class="highlight-desc">Mobile, tablet, desktop compatible</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== DATABASE SCHEMA ========== -->
+    <section class="container alt">
+        <h2 class="section-title">📊 Database Architecture</h2>
+        <p class="section-subtitle">11 normalized tables optimized for performance</p>
+
+        <div class="db-tables">
+            <div class="db-table"><h4>👥 Users</h4></div>
+            <div class="db-table"><h4>📅 Bookings</h4></div>
+            <div class="db-table"><h4>🏨 Hotels</h4></div>
+            <div class="db-table"><h4>✈️ Flights</h4></div>
+            <div class="db-table"><h4>🗺️ Locations</h4></div>
+            <div class="db-table"><h4>⭐ Reviews</h4></div>
+            <div class="db-table"><h4>💰 Payments</h4></div>
+            <div class="db-table"><h4>🗓️ Itineraries</h4></div>
+            <div class="db-table"><h4>❤️ Preferences</h4></div>
+            <div class="db-table"><h4>📝 Admin Logs</h4></div>
+            <div class="db-table"><h4>💬 Feedback</h4></div>
+        </div>
+    </section>
+
+    <!-- ========== API ENDPOINTS ========== -->
+    <section class="container">
+        <h2 class="section-title">🔗 REST API Endpoints</h2>
+        <p class="section-subtitle">32+ comprehensive endpoints for all operations</p>
+
+        <div class="endpoints-group">
+            <div class="endpoint-category">
+                <h4>🔐 Authentication Endpoints</h4>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/auth/register</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/auth/login</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/auth/send-otp</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/auth/verify-otp</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/auth/logout</span></li>
+                </ul>
+            </div>
+
+            <div class="endpoint-category">
+                <h4>🎯 Destinations & Search</h4>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/locations</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/locations/{id}</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/search</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/recommendations</span></li>
+                </ul>
+            </div>
+
+            <div class="endpoint-category">
+                <h4>📅 Bookings Management</h4>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/bookings</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/bookings</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/bookings/{id}</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-put">PUT</span> <span class="endpoint-path">/api/bookings/{id}</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-delete">DELETE</span> <span class="endpoint-path">/api/bookings/{id}</span></li>
+                </ul>
+            </div>
+
+            <div class="endpoint-category">
+                <h4>💳 Payments</h4>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/payments/create-order</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-post">POST</span> <span class="endpoint-path">/api/payments/verify</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/payments/{id}</span></li>
+                </ul>
+            </div>
+
+            <div class="endpoint-category">
+                <h4>👤 User Profile</h4>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/profile</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-put">PUT</span> <span class="endpoint-path">/api/profile</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/favorites</span></li>
+                </ul>
+            </div>
+
+            <div class="endpoint-category">
+                <h4>👨‍💼 Admin Operations</h4>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/admin/users</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/admin/bookings</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/admin/analytics</span></li>
+                    <li class="endpoint-item"><span class="method-badge method-get">GET</span> <span class="endpoint-path">/api/admin/payments</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== AI FEATURES ========== -->
+    <section class="container alt">
+        <h2 class="section-title">🤖 AI Integration Architecture</h2>
+        <p class="section-subtitle">CrewAI Multi-Agent System with Llama 3</p>
+
+        <div class="highlights-grid" style="margin-top: 50px;">
+            <div class="highlight-box">
+                <div class="feature-icon">🔍</div>
+                <div class="highlight-label">Researcher Agent</div>
+                <div class="highlight-desc">Analyzes preferences, researches destinations, finds flights & hotels</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">📋</div>
+                <div class="highlight-label">Planner Agent</div>
+                <div class="highlight-desc">Creates itineraries, optimizes routes, suggests activities & budgets</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">⚡</div>
+                <div class="highlight-label">Real-Time Analysis</div>
+                <div class="highlight-desc">Instant destination analysis and smart recommendations</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">💡</div>
+                <div class="highlight-label">Intelligent Planning</div>
+                <div class="highlight-desc">Personalized itinerary generation with travel expense optimization</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== PAYMENT & COMMUNICATION ========== -->
+    <section class="container">
+        <h2 class="section-title">💳 Third-Party Integrations</h2>
+        <p class="section-subtitle">Seamless integration with industry-leading services</p>
+
+        <div class="highlights-grid" style="margin-top: 50px;">
+            <div class="highlight-box">
+                <div class="feature-icon">💰</div>
+                <div class="highlight-label">Razorpay Payments</div>
+                <div class="highlight-desc">Secure payment processing with multiple payment methods and refund management</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">📧</div>
+                <div class="highlight-label">SendGrid Emails</div>
+                <div class="highlight-desc">Professional email templates, confirmations, and personalized communications</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">📬</div>
+                <div class="highlight-label">Gmail SMTP</div>
+                <div class="highlight-desc">Fallback email service for notifications and system alerts</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">🔒</div>
+                <div class="highlight-label">Security</div>
+                <div class="highlight-desc">OTP verification, JWT tokens, bcrypt hashing, CORS protection</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== PROJECT STRUCTURE ========== -->
+    <section class="container alt">
+        <h2 class="section-title">📁 Project Structure</h2>
+        <p class="section-subtitle">Clean, modular, production-grade architecture</p>
+
+        <div class="code-block">
+            <div class="code-label">📂 Directory Layout</div>
+GO-TRAVEL/
+├── app/
+│   ├── main.py                 # FastAPI entry point
+│   ├── database.py             # SQLite configuration
+│   ├── models.py               # SQLAlchemy ORM models
+│   ├── schemas.py              # Pydantic validation
+│   ├── routes/                 # API endpoint handlers
+│   ├── ai_service.py           # CrewAI + Llama 3
+│   ├── email_service.py        # SendGrid integration
+│   ├── payment_service.py      # Razorpay gateway
+│   ├── security.py             # OTP & JWT logic
+│   ├── dependencies.py         # Dependency injection
+│   ├── validators.py           # Data validation
+│   └── locations.py            # Location utilities
+│
+├── templates/                  # Frontend HTML
+│   ├── index.html             # Homepage
+│   ├── login.html             # Login page
+│   ├── signup.html            # Registration
+│   ├── dashboard.html         # User dashboard
+│   ├── profile.html           # Profile management
+│   ├── admin.html             # Admin panel
+│   ├── forgot.html            # Password recovery
+│   └── thankyou.html          # Confirmation
+│
+├── static/                     # Assets
+│   ├── css/                   # Stylesheets
+│   ├── js/                    # JavaScript
+│   └── img/                   # Images & icons
+│
+├── go_travel.db               # SQLite database
+├── requirements.txt           # Python dependencies
+├── .env.example              # Environment template
+└── README.md                 # Documentation
+        </div>
+    </section>
+
+    <!-- ========== GETTING STARTED ========== -->
+    <section class="container">
+        <h2 class="section-title">🚀 Getting Started</h2>
+        <p class="section-subtitle">Installation and setup guide</p>
+
+        <div style="background: var(--light); padding: 40px; border-radius: 12px; margin-top: 40px;">
+            <h3 style="color: var(--dark); margin-bottom: 20px; font-size: 1.3em;">📋 Prerequisites</h3>
+            <ul style="list-style-position: inside; color: var(--text-dark); line-height: 2;">
+                <li>✓ Python 3.8 or higher</li>
+                <li>✓ pip (Python package manager)</li>
+                <li>✓ Ollama (for local LLM deployment)</li>
+                <li>✓ Modern web browser</li>
+            </ul>
+
+            <div class="divider"></div>
+
+            <h3 style="color: var(--dark); margin: 30px 0 20px; font-size: 1.3em;">⚙️ Installation Steps</h3>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px;">
+                <div class="code-label">1️⃣ Clone Repository</div>
+                <div class="code-block">
+git clone https://github.com/ankitaryan07/GO-TRAVEL.git
+cd GO-TRAVEL
+                </div>
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px;">
+                <div class="code-label">2️⃣ Create Virtual Environment</div>
+                <div class="code-block">
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate
+                </div>
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px;">
+                <div class="code-label">3️⃣ Install Dependencies</div>
+                <div class="code-block">
+pip install -r requirements.txt
+                </div>
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px;">
+                <div class="code-label">4️⃣ Configure Environment</div>
+                <div class="code-block">
+cp .env.example .env
+# Edit .env and add your API keys:
+# RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+# SENDGRID_API_KEY, GMAIL_EMAIL, GMAIL_PASSWORD
+# OLLAMA_API_URL, JWT_SECRET_KEY
+                </div>
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px;">
+                <div class="code-label">5️⃣ Initialize Database</div>
+                <div class="code-block">
+python init_db.py
+                </div>
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px;">
+                <div class="code-label">6️⃣ Start Application</div>
+                <div class="code-block">
+uvicorn app.main:app --reload
+                </div>
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 10px;">
+                <div class="code-label">7️⃣ Access Platform</div>
+                <div class="code-block">
+Frontend:           http://localhost:8000
+API Docs:          http://localhost:8000/docs
+Swagger UI:        http://localhost:8000/docs
+ReDoc:             http://localhost:8000/redoc
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FEATURES BREAKDOWN ========== -->
+    <section class="container alt">
+        <h2 class="section-title">📋 Comprehensive Features</h2>
+        <p class="section-subtitle">Everything you need for a complete travel booking experience</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 50px;">
+            <div>
+                <h3 style="color: var(--dark); font-size: 1.3em; margin-bottom: 25px;">👤 User Features</h3>
+                <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <ul style="list-style: none; line-height: 2.2;">
+                        <li>✅ Registration & Login with OTP</li>
+                        <li>✅ Search destinations worldwide</li>
+                        <li>✅ AI-powered recommendations</li>
+                        <li>✅ Book flights and hotels</li>
+                        <li>✅ Create custom itineraries</li>
+                        <li>✅ View booking history</li>
+                        <li>✅ Download trip details</li>
+                        <li>✅ Rate and review experiences</li>
+                        <li>✅ Save favorite destinations</li>
+                        <li>✅ Manage payment methods</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--dark); font-size: 1.3em; margin-bottom: 25px;">👨‍💼 Admin Features</h3>
+                <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <ul style="list-style: none; line-height: 2.2;">
+                        <li>✅ User management</li>
+                        <li>✅ Booking oversight</li>
+                        <li>✅ Payment tracking</li>
+                        <li>✅ System analytics</li>
+                        <li>✅ Destination management</li>
+                        <li>✅ Promotional management</li>
+                        <li>✅ Report generation</li>
+                        <li>✅ Activity logging</li>
+                        <li>✅ Performance monitoring</li>
+                        <li>✅ User support tools</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== BEST PRACTICES ========== -->
+    <section class="container">
+        <h2 class="section-title">🏆 Development Best Practices</h2>
+        <p class="section-subtitle">Professional-grade code quality and architecture</p>
+
+        <div class="highlights-grid" style="margin-top: 50px;">
+            <div class="highlight-box">
+                <div class="feature-icon">📐</div>
+                <div class="highlight-label">Clean Architecture</div>
+                <div class="highlight-desc">Separation of concerns with clear, modular structure</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">♻️</div>
+                <div class="highlight-label">DRY Principle</div>
+                <div class="highlight-desc">Don't Repeat Yourself - reusable, maintainable code</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">🔒</div>
+                <div class="highlight-label">Security First</div>
+                <div class="highlight-desc">Input validation, SQL injection prevention, secure auth</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">📚</div>
+                <div class="highlight-label">API Documentation</div>
+                <div class="highlight-desc">Swagger/OpenAPI with comprehensive endpoint documentation</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">🧪</div>
+                <div class="highlight-label">Error Handling</div>
+                <div class="highlight-desc">Comprehensive error handling and validation</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">🌍</div>
+                <div class="highlight-label">Environment Config</div>
+                <div class="highlight-desc">.env based configuration for all environments</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== LEARNING OUTCOMES ========== -->
+    <section class="container alt">
+        <h2 class="section-title">🎓 Learning Outcomes</h2>
+        <p class="section-subtitle">Skills and concepts demonstrated</p>
+
+        <div class="features-grid" style="margin-top: 50px;">
+            <div class="feature-card">
+                <div class="feature-icon">🔨</div>
+                <h3>Full-Stack Development</h3>
+                <p>Complete web application from database to frontend UI</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔌</div>
+                <h3>RESTful API Design</h3>
+                <p>Professional API architecture and implementation patterns</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Database Design</h3>
+                <p>Normalized schemas with proper relationships and indexing</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI/ML Integration</h3>
+                <p>LLM integration with multi-agent systems</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <h3>Third-Party APIs</h3>
+                <p>Payment gateways, email services, and external integrations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>UI/UX Design</h3>
+                <p>Responsive design principles and user-centric interfaces</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3>Security</h3>
+                <p>Authentication, authorization, and data protection</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Git & Version Control</h3>
+                <p>Professional repository management and collaboration</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== CONTACT & SUPPORT ========== -->
+    <section class="container">
+        <h2 class="section-title">📞 Support & Resources</h2>
+        <p class="section-subtitle">Get help and stay updated</p>
+
+        <div class="highlights-grid" style="margin-top: 50px;">
+            <div class="highlight-box">
+                <div class="feature-icon">🐙</div>
+                <div class="highlight-label">GitHub Repository</div>
+                <div class="highlight-desc">Full source code, issues, and project management</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">📖</div>
+                <div class="highlight-label">API Documentation</div>
+                <div class="highlight-desc">Complete Swagger/OpenAPI at /docs endpoint</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">💬</div>
+                <div class="highlight-label">Issue Tracker</div>
+                <div class="highlight-desc">Report bugs or suggest features on GitHub</div>
+            </div>
+            <div class="highlight-box">
+                <div class="feature-icon">📧</div>
+                <div class="highlight-label">Contact Support</div>
+                <div class="highlight-desc">Email for questions or collaboration opportunities</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <footer>
+        <p><strong>🎓 MCA Final Year Project</strong></p>
+        <p>Aryabhatta Knowledge University, Patna</p>
+        <p>Student: <strong>Ankit Aryan</strong> (24326711015)</p>
+        <p>College: <strong>CIMAGE Center of Digital Technology and Entrepreneurship</strong></p>
+        <p>Faculty Guide: <strong>Prof. Dr. Amit Kumar Shukla</strong></p>
+        
+        <div class="divider"></div>
+        
+        <p>Made with <span class="heart">❤️</span> by Ankit Aryan</p>
+        <p><strong>© 2026 - All Rights Reserved</strong></p>
+        <p style="margin-top: 15px; opacity: 0.8;">Last Updated: July 26, 2026 | Status: ✅ Production Ready</p>
+    </footer>
+</body>
+</html>
