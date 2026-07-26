@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — GO-TRAVEL</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { background: #f0f4f8; }
+        .navbar { position: sticky; top: 0; z-index: 300; background: #0F1F47; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+        .navbar .logo { font-size: 22px; font-weight: 800; color: #fff; }
+        .navbar .logo span { color: #E8771E; }
+        .nav-right { display: flex; align-items: center; gap: 16px; }
+        .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .nav-link:hover { color: #E8771E; }
+        .nav-profile-wrap { position: relative; }
+        .nav-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid #E8771E; display: flex; align-items: center; justify-content: center; background: #E8771E; color: white; font-weight: 700; font-size: 16px; }
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-dropdown { display: none; position: absolute; top: 48px; right: 0; min-width: 180px; background: #fff; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; z-index: 500; }
+        .nav-dropdown.show { display: block; }
+        .nav-dropdown a { display: block; padding: 12px 16px; color: #0F1F47; font-size: 14px; text-decoration: none; transition: background 0.15s; border-bottom: 1px solid #f3f4f6; }
+        .nav-dropdown a:hover { background: #f9fafb; }
+        .nav-dropdown a:last-child { border-bottom: none; color: #ef4444; }
+
+        .profile-container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+
+        /* TABS */
+        .ptabs { display: flex; gap: 4px; background: #fff; border-radius: 12px; padding: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin-bottom: 24px; }
+        .ptab { flex: 1; padding: 10px 6px; text-align: center; cursor: pointer; border-radius: 8px; font-size: 13px; font-weight: 600; color: #6b7280; transition: all 0.2s; }
+        .ptab.active { background: #0F1F47; color: #fff; }
+
+        /* SECTION CARDS */
+        .pcard { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+
+        /* PROFILE PHOTO BIG */
+        .photo-hero {
+            display: flex; align-items: center; gap: 24px; margin-bottom: 28px;
+            padding: 20px; background: linear-gradient(135deg, #0F1F47, #1a4480);
+            border-radius: 14px; cursor: pointer;
+        }
+        .photo-hero-img {
+            width: 90px; height: 90px; border-radius: 50%; border: 4px solid #E8771E;
+            object-fit: cover; background: #E8771E; display: flex; align-items: center;
+            justify-content: center; font-size: 36px; color: white; font-weight: 700;
+            flex-shrink: 0; overflow: hidden;
+        }
+        .photo-hero-img img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-hero-info h3 { color: #fff; margin: 0 0 4px; font-size: 20px; }
+        .photo-hero-info p { color: rgba(255,255,255,0.6); margin: 0; font-size: 13px; }
+        .photo-change-hint { color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 6px; }
+
+        /* FORM */
+        .fg { margin-bottom: 16px; }
+        .fg label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+        .fg input { width: 100%; padding: 11px 13px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: border-color 0.2s; }
+        .fg input:focus { outline: none; border-color: #0F1F47; }
+        .fg input.invalid { border-color: #ef4444; }
+        .field-error { color: #ef4444; font-size: 12px; margin-top: 4px; display: none; }
+        .field-error.show { display: block; }
+        .btn-save { background: linear-gradient(135deg, #0F1F47, #1a4480); color: white; border: none; padding: 12px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-save:hover { opacity: 0.9; transform: translateY(-1px); }
+        .alert { padding: 10px 16px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+        .alert-success { background: rgba(16,185,129,0.1); color: #065f46; border: 1px solid rgba(16,185,129,0.3); }
+        .alert-error { background: rgba(239,68,68,0.1); color: #991b1b; border: 1px solid rgba(239,68,68,0.3); }
+
+        /* ===== ANIMATED CREDIT CARD ===== */
+        .card-scene { perspective: 1000px; width: 100%; max-width: 400px; margin: 0 auto 28px; height: 220px; }
+        .card-3d {
+            width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+        }
+        .card-3d.flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 18px; padding: 24px; box-sizing: border-box;
+        }
+        /* FRONT */
+        .card-front {
+            background: linear-gradient(135deg, #1a1a4e 0%, #16213e 40%, #0f3460 70%, #E8771E 150%);
+            box-shadow: 0 20px 60px rgba(15,31,71,0.5);
+        }
+        .card-front::before {
+            content: ''; position: absolute; top: -30px; right: -30px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(232,119,30,0.1); pointer-events: none;
+        }
+        /* BACK */
+        .card-back {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            transform: rotateY(180deg);
+            box-shadow: 0 20px 60px rgba(15,31,71,0.5);
+        }
+        .card-magnetic { height: 40px; background: #1a1a1a; margin: 30px -24px 16px; }
+        .card-cvv-wrap { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding-right: 10px; }
+        .cvv-strip { background: rgba(255,255,255,0.9); color: #333; padding: 6px 16px; border-radius: 4px; font-size: 16px; font-family: monospace; letter-spacing: 4px; min-width: 80px; text-align: center; }
+        .cvv-label { color: rgba(255,255,255,0.5); font-size: 11px; }
+        .card-chip { width: 46px; height: 34px; background: linear-gradient(135deg, #ffd700, #ffa500); border-radius: 6px; margin-bottom: 24px; position: relative; }
+        .card-chip::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,0.2); }
+        .card-chip::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.2); }
+        .card-number-display { font-family: 'Courier New', monospace; font-size: 20px; color: #fff; letter-spacing: 4px; margin-bottom: 18px; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+        .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+        .card-holder-display { }
+        .card-label { color: rgba(255,255,255,0.5); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; }
+        .card-value { color: #fff; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .card-network { font-size: 28px; }
+
+        /* UPI form */
+        .upi-card {
+            background: linear-gradient(135deg, #065f46, #047857);
+            border-radius: 18px; padding: 28px; color: white;
+            box-shadow: 0 12px 40px rgba(6,95,70,0.4); margin-bottom: 20px;
+        }
+        .upi-card .upi-logo { font-size: 32px; margin-bottom: 10px; }
+        .upi-card input {
+            background: rgba(255,255,255,0.15) !important; border: 1px solid rgba(255,255,255,0.3) !important;
+            color: white !important; font-size: 16px !important;
+        }
+        .upi-card input::placeholder { color: rgba(255,255,255,0.4) !important; }
+        .upi-card label { color: rgba(255,255,255,0.8) !important; }
+
+        /* Saved methods list */
+        .saved-method-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 10px;
+            transition: box-shadow 0.2s;
+        }
+        .saved-method-item:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+        .sm-icon { font-size: 24px; margin-right: 12px; }
+        .sm-info .sm-title { font-weight: 700; color: #0F1F47; font-size: 14px; }
+        .sm-info .sm-sub { color: #6b7280; font-size: 12px; }
+        .btn-remove { background: none; border: 1px solid #fca5a5; color: #ef4444; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+        .btn-remove:hover { background: #fef2f2; }
+
+        .type-select { display: flex; gap: 10px; margin-bottom: 20px; }
+        .type-btn { flex: 1; padding: 12px; border-radius: 10px; border: 2px solid #e5e7eb; background: #fff; cursor: pointer; text-align: center; font-weight: 700; font-size: 14px; transition: all 0.2s; color: #6b7280; }
+        .type-btn.active { border-color: #0F1F47; color: #0F1F47; background: #f0f4f8; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">GO<span>-TRAVEL</span></div>
+        <div class="nav-right">
+            <a href="/dashboard" class="nav-link">← Dashboard</a>
+            <div class="nav-profile-wrap">
+                <div class="nav-avatar" id="navAvatarWrap" onclick="toggleDropdown()">
+                    <span id="navAvatarLetter">U</span>
+                </div>
+                <div class="nav-dropdown" id="navDropdown">
+                    <a href="/dashboard">🏠 Dashboard</a>
+                    <a href="#" onclick="showTabByName('password');document.getElementById('navDropdown').classList.remove('show')">🔑 Change Password</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div id="globalMsg"></div>
+        <div class="ptabs">
+            <div class="ptab active" id="ptab-profile" onclick="showTabByName('profile')">👤 Profile</div>
+            <div class="ptab" id="ptab-payment" onclick="showTabByName('payment')">💳 Payment</div>
+            <div class="ptab" id="ptab-password" onclick="showTabByName('password')">🔑 Password</div>
+            <div class="ptab" id="ptab-theme" onclick="showTabByName('theme')">🎨 Theme</div>
+        </div>
+
+        <!-- PROFILE TAB -->
+        <div id="tab-profile" class="pcard">
+            <input type="file" id="photoInput" accept="image/*" onchange="uploadPhoto(event)" style="display:none;">
+            <div class="photo-hero" onclick="document.getElementById('photoInput').click()">
+                <div class="photo-hero-img" id="photoHeroWrap">
+                    <span id="photoHeroLetter">U</span>
+                </div>
+                <div class="photo-hero-info">
+                    <h3 id="heroName">—</h3>
+                    <p id="heroEmail">—</p>
+                    <div class="photo-change-hint">📷 Click to change profile photo</div>
+                </div>
+            </div>
+            <div id="pMsg"></div>
+            <div class="fg">
+                <label>Full Name</label>
+                <input type="text" id="pName" placeholder="Your full name">
+            </div>
+            <div class="fg">
+                <label>Email</label>
+                <input type="email" id="pEmail" placeholder="name@example.com">
+                <div class="field-error" id="errEmail">Enter a valid email</div>
+            </div>
+            <div class="fg">
+                <label>Phone</label>
+                <input type="tel" id="pPhone" placeholder="10-digit mobile number">
+                <div class="field-error" id="errPhone">Enter a valid 10-digit mobile number</div>
+            </div>
+            <button class="btn-save" onclick="saveProfile()">💾 Save Changes</button>
+        </div>
+
+        <!-- PAYMENT TAB -->
+        <div id="tab-payment" class="pcard" style="display:none;">
+            <h3 style="margin:0 0 20px;color:#0F1F47;">💳 Payment Methods</h3>
+
+            <!-- Saved methods -->
+            <div id="savedMethods" style="margin-bottom:28px;"></div>
+            <hr style="border:none;border-top:1px solid #f3f4f6;margin:20px 0;">
+
+            <!-- Add new -->
+            <h4 style="color:#0F1F47;margin:0 0 16px;">Add New Method</h4>
+            <div class="type-select">
+                <button class="type-btn active" id="typeBtnCard" onclick="selectType('card')">💳 Card</button>
+                <button class="type-btn" id="typeBtnUpi" onclick="selectType('upi')">📱 UPI</button>
+            </div>
+            <div id="payMsg"></div>
+
+            <!-- CARD UI -->
+            <div id="cardSection">
+                <!-- Animated card preview -->
+                <div class="card-scene">
+                    <div class="card-3d" id="card3d">
+                        <div class="card-face card-front">
+                            <div class="card-chip"></div>
+                            <div class="card-number-display" id="previewNum">•••• •••• •••• ••••</div>
+                            <div class="card-bottom">
+                                <div class="card-holder-display">
+                                    <div class="card-label">Card Holder</div>
+                                    <div class="card-value" id="previewHolder">YOUR NAME</div>
+                                </div>
+                                <div>
+                                    <div class="card-label">Expires</div>
+                                    <div class="card-value" id="previewExp">MM/YY</div>
+                                </div>
+                                <div class="card-network" id="previewNetwork">💳</div>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-magnetic"></div>
+                            <div class="card-cvv-wrap">
+                                <div class="cvv-label">CVV</div>
+                                <div class="cvv-strip" id="previewCvv">•••</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="fg">
+                    <label>Card Number</label>
+                    <input type="text" id="cardNum" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCardNum(this)" onfocus="card3dFlip(false)">
+                </div>
+                <div class="fg">
+                    <label>Card Holder Name</label>
+                    <input type="text" id="cardHolder" placeholder="As printed on card" oninput="updatePreview()" onfocus="card3dFlip(false)">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="fg">
+                        <label>Expiry (MM/YYYY)</label>
+                        <input type="text" id="cardExp" placeholder="12/2027" maxlength="7" oninput="updatePreview()" onfocus="card3dFlip(false)">
+                    </div>
+                    <div class="fg">
+                        <label>CVV</label>
+                        <input type="text" id="cardCvv" placeholder="123" maxlength="4" oninput="updateCvvPreview(this)" onfocus="card3dFlip(true)" onblur="card3dFlip(false)">
+                    </div>
+                </div>
+                <button class="btn-save" onclick="addMethod()">💾 Save Card</button>
+            </div>
+
+            <!-- UPI UI -->
+            <div id="upiSection" style="display:none;">
+                <div class="upi-card">
+                    <div class="upi-logo">📱</div>
+                    <h3 style="margin:0 0 16px;color:#fff;">Add UPI ID</h3>
+                    <div class="fg">
+                        <label>UPI ID</label>
+                        <input type="text" id="upiId" placeholder="e.g., name@okhdfcbank">
+                    </div>
+                </div>
+                <button class="btn-save" onclick="addMethod()">💾 Save UPI</button>
+            </div>
+        </div>
+
+        <!-- PASSWORD TAB -->
+        <div id="tab-password" class="pcard" style="display:none;">
+            <h3 style="margin:0 0 20px;color:#0F1F47;">🔑 Change Password</h3>
+            <div id="passMsg"></div>
+            <div class="fg">
+                <label>Current Password</label>
+                <input type="password" id="oldPass" placeholder="Your current password">
+            </div>
+            <div class="fg">
+                <label>New Password</label>
+                <input type="password" id="newPass" placeholder="Minimum 6 characters">
+            </div>
+            <div class="fg">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPass" placeholder="Re-enter new password">
+            </div>
+            <button class="btn-save" onclick="changePassword()">🔑 Update Password</button>
+        </div>
+
+        <!-- THEME TAB -->
+        <div id="tab-theme" class="pcard" style="display:none;">
+            <h3 style="margin:0 0 8px;color:#0F1F47;">🎨 Appearance</h3>
+            <p style="color:#6b7280;margin:0 0 24px;">Choose your preferred theme</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div onclick="setTheme('light')" style="cursor:pointer;border:2px solid #0F1F47;border-radius:14px;padding:24px;text-align:center;background:#f9fafb;">
+                    <div style="font-size:36px;margin-bottom:8px;">☀️</div>
+                    <div style="font-weight:700;color:#0F1F47;">Light Mode</div>
+                </div>
+                <div onclick="setTheme('dark')" style="cursor:pointer;border:2px solid #374151;border-radius:14px;padding:24px;text-align:center;background:#1f2937;">
+                    <div style="font-size:36px;margin-bottom:8px;">🌙</div>
+                    <div style="font-weight:700;color:#fff;">Dark Mode</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        requireAuth();
+        const emailRe = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const phoneRe = /^[6-9]\d{9}$/;
+        let me = null;
+        let currentType = 'card';
+
+        // NAV SETUP
+        async function setupNav() {
+            try {
+                me = await apiRequest('/profile');
+            } catch(e) {
+                // 401 handled by apiRequest auto-redirect
+                return;
+            }
+            const wrap = document.getElementById('navAvatarWrap');
+            if (me.photo_url && me.photo_url.startsWith('data:')) {
+                wrap.innerHTML = '<img src="' + me.photo_url + '" style="width:100%;height:100%;object-fit:cover;" alt="photo">';
+            } else {
+                const letter = (me.name||'U')[0].toUpperCase();
+                document.getElementById('navAvatarLetter').textContent = letter;
+            }
+            if (me.theme === 'dark') document.body.classList.add('dark');
+            // Profile hero — fill real data
+            document.getElementById('heroName').textContent = me.name || 'User';
+            document.getElementById('heroEmail').textContent = me.email || '';
+            document.getElementById('pName').value = me.name || '';
+            document.getElementById('pEmail').value = me.email || '';
+            document.getElementById('pPhone').value = me.phone || '';
+            const heroWrap = document.getElementById('photoHeroWrap');
+            if (me.photo_url && me.photo_url.startsWith('data:')) {
+                heroWrap.innerHTML = '<img src="' + me.photo_url + '" style="width:100%;height:100%;object-fit:cover;">';
+            } else {
+                const l = (me.name||'U')[0].toUpperCase();
+                heroWrap.innerHTML = '<span style="font-size:36px;font-weight:700;color:#fff;">' + l + '</span>';
+            }
+        }
+        setupNav();
+
+        function toggleDropdown() { document.getElementById('navDropdown').classList.toggle('show'); }
+        document.addEventListener('click', e => {
+            if (!document.querySelector('.nav-profile-wrap').contains(e.target))
+                document.getElementById('navDropdown').classList.remove('show');
+        });
+
+        function showTabByName(name) {
+            ['profile','payment','password','theme'].forEach(t => {
+                document.getElementById('tab-'+t).style.display = t === name ? 'block' : 'none';
+                document.getElementById('ptab-'+t).classList.toggle('active', t === name);
+            });
+            if (name === 'payment') loadMethods();
+        }
+
+        function uploadPhoto(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const src = reader.result;
+                const heroWrap = document.getElementById('photoHeroWrap');
+                heroWrap.innerHTML = '<img src="' + src + '">';
+                const navWrap = document.getElementById('navAvatarWrap');
+                navWrap.innerHTML = '<img src="' + src + '">';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('pName').value.trim();
+            const email = document.getElementById('pEmail').value.trim();
+            const phone = document.getElementById('pPhone').value.trim();
+            const heroWrap = document.getElementById('photoHeroWrap');
+            const heroImg = heroWrap.querySelector('img');
+            const photo = heroImg ? heroImg.src : null;
+            const msg = document.getElementById('pMsg');
+            document.getElementById('errEmail').classList.toggle('show', !emailRe.test(email));
+            document.getElementById('errPhone').classList.toggle('show', phone && !phoneRe.test(phone.replace(/\D/g,'')));
+            if (!emailRe.test(email)) return;
+            if (phone && !phoneRe.test(phone.replace(/\D/g,''))) return;
+            try {
+                const updated = await apiRequest('/profile', 'PUT', {
+                    name, email, phone: phone || null,
+                    photo_url: photo && photo.startsWith('data:') ? photo : null
+                });
+                saveUser(updated);
+                document.getElementById('heroName').textContent = updated.name;
+                document.getElementById('heroEmail').textContent = updated.email;
+                // Update nav avatar
+                const navW = document.getElementById('navAvatarWrap');
+                const heroImg2 = document.getElementById('photoHeroWrap').querySelector('img');
+                if (heroImg2) {
+                    navW.innerHTML = '<img src="' + heroImg2.src + '" style="width:100%;height:100%;object-fit:cover;">';
+                } else {
+                    document.getElementById('navAvatarLetter').textContent = (updated.name||'U')[0].toUpperCase();
+                }
+                msg.innerHTML = '<div class="alert alert-success">✅ Profile updated successfully!</div>';
+            } catch(e) { msg.innerHTML = '<div class="alert alert-error">' + e.message + '</div>'; }
+        }
+
+        // ===== ANIMATED CARD =====
+        function card3dFlip(toBack) {
+            document.getElementById('card3d').classList.toggle('flipped', toBack);
+        }
+        function formatCardNum(inp) {
+            let v = inp.value.replace(/\D/g,'').slice(0,16);
+            // Format as XXXX XXXX XXXX XXXX
+            let formatted = '';
+            for(let i=0;i<v.length;i++) {
+                if(i>0 && i%4===0) formatted += ' ';
+                formatted += v[i];
+            }
+            inp.value = formatted;
+            updatePreview();
+        }
+        function updatePreview() {
+            const raw = document.getElementById('cardNum').value.replace(/\D/g,'');
+            // Always show 16 digit groups — fill remaining with dots
+            const padded = (raw + '................').slice(0,16);
+            const grouped = padded.match(/.{1,4}/g).join(' ');
+            document.getElementById('previewNum').textContent = grouped;
+
+            const holder = document.getElementById('cardHolder').value.trim().toUpperCase() || 'YOUR NAME';
+            document.getElementById('previewHolder').textContent = holder.slice(0,22);
+
+            const exp = document.getElementById('cardExp').value || 'MM/YY';
+            const parts = exp.split('/');
+            document.getElementById('previewExp').textContent = (parts[0]||'MM') + '/' + (parts[1] ? parts[1].slice(-2) : 'YY');
+
+            // Network detect
+            let net = '💳';
+            if (raw.startsWith('4')) net = '🔵 VISA';
+            else if (['51','52','53','54','55'].some(p => raw.startsWith(p))) net = '🔴 MC';
+            else if (raw.startsWith('6')) net = '🟠 RuPay';
+            else if (raw.startsWith('3')) net = '🟡 AMEX';
+            document.getElementById('previewNetwork').textContent = net;
+        }
+        function updateCvvPreview(inp) {
+            document.getElementById('previewCvv').textContent = inp.value ? inp.value.replace(/./g,'•') : '•••';
+        }
+
+        function selectType(type) {
+            currentType = type;
+            document.getElementById('typeBtnCard').classList.toggle('active', type === 'card');
+            document.getElementById('typeBtnUpi').classList.toggle('active', type === 'upi');
+            document.getElementById('cardSection').style.display = type === 'card' ? 'block' : 'none';
+            document.getElementById('upiSection').style.display = type === 'upi' ? 'block' : 'none';
+        }
+
+        async function loadMethods() {
+            const box = document.getElementById('savedMethods');
+            try {
+                const methods = await apiRequest('/profile/payment-methods');
+                if (!methods.length) {
+                    box.innerHTML = '<p style="color:#9ca3af;font-size:14px;text-align:center;padding:20px;">No saved payment methods yet.</p>';
+                    return;
+                }
+                box.innerHTML = methods.map(m => `
+                    <div class="saved-method-item">
+                        <div style="display:flex;align-items:center;">
+                            <span class="sm-icon">${m.method_type === 'card' ? '💳' : '📱'}</span>
+                            <div class="sm-info">
+                                <div class="sm-title">${m.label || m.method_type.toUpperCase()}</div>
+                                <div class="sm-sub">${m.masked_value || ''}</div>
+                            </div>
+                        </div>
+                        <button class="btn-remove" onclick="delMethod(${m.method_id})">Remove</button>
+                    </div>`).join('');
+            } catch(e) { box.innerHTML = '<div class="alert alert-error">' + e.message + '</div>'; }
+        }
+
+        async function addMethod() {
+            const msg = document.getElementById('payMsg');
+            let body = { method_type: currentType };
+            if (currentType === 'card') {
+                const num = document.getElementById('cardNum').value;
+                const holder = document.getElementById('cardHolder').value;
+                const exp = document.getElementById('cardExp').value;
+                if (!num || num.replace(/\D/g,'').length < 12) {
+                    msg.innerHTML = '<div class="alert alert-error">Enter a valid card number (12+ digits)</div>'; return;
+                }
+                body.card_number = num;
+                body.card_holder = holder || 'CARD HOLDER';
+                body.card_expiry = exp;
+                body.label = holder.toUpperCase() || 'CARD';
+            } else {
+                const upi = document.getElementById('upiId').value.trim();
+                if (!upi || !upi.includes('@')) {
+                    msg.innerHTML = '<div class="alert alert-error">Enter a valid UPI ID (e.g., name@okhdfcbank)</div>'; return;
+                }
+                body.upi_id = upi;
+                body.label = 'UPI';
+            }
+            try {
+                await apiRequest('/profile/payment-methods', 'POST', body);
+                msg.innerHTML = '<div class="alert alert-success">✅ Payment method saved!</div>';
+                loadMethods();
+                // Reset card form
+                if (currentType === 'card') {
+                    document.getElementById('cardNum').value = '';
+                    document.getElementById('cardHolder').value = '';
+                    document.getElementById('cardExp').value = '';
+                    document.getElementById('cardCvv').value = '';
+                    updatePreview();
+                } else {
+                    document.getElementById('upiId').value = '';
+                }
+            } catch(e) { msg.innerHTML = '<div class="alert alert-error">' + e.message + '</div>'; }
+        }
+
+        async function delMethod(id) {
+            if (!confirm('Remove this payment method?')) return;
+            await apiRequest('/profile/payment-methods/' + id, 'DELETE');
+            loadMethods();
+        }
+
+        async function changePassword() {
+            const oldPass = document.getElementById('oldPass').value;
+            const newPass = document.getElementById('newPass').value;
+            const confirmP = document.getElementById('confirmPass').value;
+            const msg = document.getElementById('passMsg');
+            if (!oldPass || !newPass) { msg.innerHTML = '<div class="alert alert-error">All fields required</div>'; return; }
+            if (newPass.length < 6) { msg.innerHTML = '<div class="alert alert-error">New password must be at least 6 characters</div>'; return; }
+            if (newPass !== confirmP) { msg.innerHTML = '<div class="alert alert-error">Passwords do not match</div>'; return; }
+            try {
+                await apiRequest('/profile/password', 'PUT', { old_password: oldPass, new_password: newPass });
+                msg.innerHTML = '<div class="alert alert-success">✅ Password updated! Please login again.</div>';
+                document.getElementById('oldPass').value = '';
+                document.getElementById('newPass').value = '';
+                document.getElementById('confirmPass').value = '';
+            } catch(e) { msg.innerHTML = '<div class="alert alert-error">' + e.message + '</div>'; }
+        }
+
+        async function setTheme(theme) {
+            document.body.classList.toggle('dark', theme === 'dark');
+            try {
+                const updated = await apiRequest('/profile', 'PUT', { theme });
+                saveUser(updated);
+                document.getElementById('globalMsg').innerHTML = '<div class="alert alert-success" style="margin:0 0 16px;">Theme updated!</div>';
+                setTimeout(() => document.getElementById('globalMsg').innerHTML = '', 2000);
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>

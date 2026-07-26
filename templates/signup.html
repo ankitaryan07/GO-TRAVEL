@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up — GO-TRAVEL</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .verify-badge { display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:700; }
+        .badge-unverified { background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3); }
+        .badge-verified   { background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.3); }
+        .verify-row { display:flex;gap:8px;align-items:flex-end; }
+        .verify-row input { flex:1; }
+        .btn-send-otp { white-space:nowrap;padding:11px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#0F1F47,#1a4480);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s; }
+        .btn-send-otp:disabled { opacity:.4;cursor:not-allowed; }
+        .otp-box { background:linear-gradient(135deg,#065f46,#047857);border-radius:12px;padding:18px;text-align:center;margin:10px 0;animation:slideDown .3s ease; }
+        @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        .otp-num { color:#fff;font-size:34px;font-weight:900;letter-spacing:8px;font-family:monospace; }
+        .otp-lbl { color:rgba(255,255,255,.55);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px; }
+        .btn-autofill { margin-top:8px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700; }
+        .btn-autofill:hover { background:rgba(255,255,255,.3); }
+        .otp-row { display:flex;gap:8px;margin-top:8px; }
+        .otp-row input { flex:1;text-align:center;font-size:20px;letter-spacing:8px;font-weight:700; }
+        .btn-confirm { padding:11px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#E8771E,#f59e0b);color:#fff;font-size:13px;font-weight:700;cursor:pointer; }
+        .email-note { font-size:11px;color:rgba(255,255,255,.5);margin-top:6px;text-align:center; }
+        .field-error { color:#ef4444;font-size:12px;margin-top:4px;display:none; }
+        .field-error.show { display:block; }
+    </style>
+</head>
+<body>
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <!-- LOGO -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;">
+                <div style="width:40px;height:40px;background:linear-gradient(135deg,#E8771E,#f59e0b);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 14px rgba(232,119,30,.5);">✈</div>
+                <h1 style="margin:0;">GO<span>-TRAVEL</span></h1>
+            </div>
+            <p class="subtitle">Create your free account</p>
+
+            <div id="msg"></div>
+
+            <!-- STEP 1: EMAIL VERIFY -->
+            <div class="form-group">
+                <label style="display:flex;justify-content:space-between;align-items:center;">
+                    Email Address
+                    <span class="verify-badge badge-unverified" id="verifyBadge">✕ Not Verified</span>
+                </label>
+                <div class="verify-row">
+                    <input type="email" id="email" placeholder="yourname@gmail.com"
+                           oninput="onEmailInput(this)">
+                    <button class="btn-send-otp" id="sendOtpBtn" onclick="sendOTP()" disabled>
+                        Verify →
+                    </button>
+                </div>
+                <div class="field-error" id="errEmail"></div>
+            </div>
+
+            <!-- OTP Section -->
+            <div id="otpSection" style="display:none;">
+                <div id="otpBox"></div>
+                <div class="form-group" style="margin-top:8px;">
+                    <label>Enter Verification Code</label>
+                    <div class="otp-row">
+                        <input type="text" id="otpCode" placeholder="000000" maxlength="6"
+                               onkeypress="if(event.key==='Enter')confirmOTP()">
+                        <button class="btn-confirm" onclick="confirmOTP()">✓ Confirm</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: REST OF FORM (shown after email verified) -->
+            <div id="restForm" style="display:none;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="name" placeholder="e.g., Rahul Sharma">
+                    <div class="field-error" id="errName">Name must be at least 2 characters</div>
+                </div>
+                <div class="form-group">
+                    <label>Phone <span style="opacity:.5;font-size:11px;">(optional)</span></label>
+                    <input type="tel" id="phone" placeholder="10-digit mobile e.g., 9876543210">
+                    <div class="field-error" id="errPhone">Must be 10 digits starting with 6-9</div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Minimum 6 characters">
+                    <div class="field-error" id="errPass">Password must be at least 6 characters</div>
+                </div>
+                <button class="btn btn-block" id="signupBtn" onclick="doSignup()">
+                    🚀 Create Account
+                </button>
+            </div>
+
+            <p class="switch" style="margin-top:16px;">
+                Already have an account? <a href="/login">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Strict email regex
+        const emailRe = /^[a-zA-Z0-9][a-zA-Z0-9._%+-]{1,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const phoneRe = /^[6-9]\d{9}$/;
+
+        // Known fake domains to block on frontend too
+        const fakeDomains = ['gnail.com','gmai.com','gamil.com','gmal.com',
+                             'yaho.com','yahooo.com','hotmai.com','outlok.com',
+                             'example.com','test.com','fake.com','invalid.com'];
+        const fakeLocal = ['test','fake','abc','xyz','aaa','bbb','temp','spam','null','undefined'];
+
+        let emailVerified = false;
+
+        function validateEmailFrontend(email) {
+            if (!email) return { ok: false, msg: 'Please enter your email' };
+            if (!emailRe.test(email)) return { ok: false, msg: '❌ Invalid email — e.g., name@gmail.com' };
+            const [local, domain] = email.split('@');
+            if (fakeDomains.includes(domain.toLowerCase()))
+                return { ok: false, msg: `❌ "${domain}" is not a valid email domain` };
+            if (fakeLocal.some(f => local.toLowerCase() === f))
+                return { ok: false, msg: '❌ Please use your real email address' };
+            if (/^(.)\1{3,}/.test(local))
+                return { ok: false, msg: '❌ Please use your real email address' };
+            return { ok: true };
+        }
+
+        function onEmailInput(inp) {
+            const val = inp.value.trim().toLowerCase();
+            const errEl = document.getElementById('errEmail');
+            const btn = document.getElementById('sendOtpBtn');
+
+            if (!val) { errEl.classList.remove('show'); btn.disabled = true; return; }
+
+            const { ok, msg } = validateEmailFrontend(val);
+            errEl.textContent = msg || '';
+            errEl.classList.toggle('show', !ok);
+            btn.disabled = !ok;
+
+            // Reset if email changed after verification
+            if (emailVerified) {
+                emailVerified = false;
+                document.getElementById('verifyBadge').className = 'verify-badge badge-unverified';
+                document.getElementById('verifyBadge').textContent = '✕ Not Verified';
+                document.getElementById('restForm').style.display = 'none';
+                document.getElementById('otpSection').style.display = 'none';
+            }
+        }
+
+        async function sendOTP() {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const msg = document.getElementById('msg');
+
+            // Frontend validate first
+            const { ok, msg: errMsg } = validateEmailFrontend(email);
+            if (!ok) { msg.innerHTML = `<div class="alert alert-error">${errMsg}</div>`; return; }
+
+            const btn = document.getElementById('sendOtpBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
+
+            try {
+                const res = await apiRequest('/auth/send-verification', 'POST', { email }, false);
+
+                btn.textContent = '✓ Sent!';
+                document.getElementById('otpSection').style.display = 'block';
+
+                const box = document.getElementById('otpBox');
+
+                if (res.test_otp) {
+                    // Test mode — OTP screen pe dikhao
+                    box.innerHTML = `
+                        <div class="otp-box">
+                            <div class="otp-lbl">🧪 Test Mode — Verification Code</div>
+                            <div class="otp-num">${res.test_otp}</div>
+                            <div style="color:rgba(255,255,255,.45);font-size:11px;margin-top:4px;">
+                                Valid 10 minutes
+                            </div>
+                            <button class="btn-autofill"
+                                onclick="document.getElementById('otpCode').value='${res.test_otp}'">
+                                ⚡ Auto-fill
+                            </button>
+                        </div>
+                        ${res.email_sent
+                            ? `<div class="email-note">✉️ Code also sent to <strong style="color:rgba(255,255,255,.8);">${email}</strong></div>`
+                            : `<div class="email-note">ℹ️ Email service not configured — use code above</div>`
+                        }`;
+                } else {
+                    box.innerHTML = `
+                        <div style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);
+                                    border-radius:8px;padding:12px;text-align:center;color:#10b981;font-size:13px;">
+                            ✉️ Verification code sent to <strong>${email}</strong><br>
+                            <span style="font-size:11px;opacity:.7;">Check inbox & spam folder</span>
+                        </div>`;
+                }
+
+                msg.innerHTML = `<div class="alert alert-success">✅ Code sent to ${email}</div>`;
+
+                // Resend after 30 seconds
+                setTimeout(() => { btn.disabled = false; btn.textContent = '↺ Resend'; }, 30000);
+
+            } catch(e) {
+                btn.disabled = false;
+                btn.textContent = 'Verify →';
+                msg.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+            }
+        }
+
+        async function confirmOTP() {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const code = document.getElementById('otpCode').value.trim();
+            const msg = document.getElementById('msg');
+
+            if (!code || code.length < 6) {
+                msg.innerHTML = '<div class="alert alert-error">❌ Enter 6-digit code</div>';
+                return;
+            }
+
+            try {
+                await apiRequest('/auth/confirm-verification', 'POST', { email, code }, false);
+
+                // Email verified!
+                emailVerified = true;
+                document.getElementById('verifyBadge').className = 'verify-badge badge-verified';
+                document.getElementById('verifyBadge').textContent = '✓ Verified';
+                document.getElementById('otpSection').style.display = 'none';
+                document.getElementById('restForm').style.display = 'block';
+                msg.innerHTML = '<div class="alert alert-success">✅ Email verified! Fill in your details.</div>';
+
+            } catch(e) {
+                msg.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+            }
+        }
+
+        async function doSignup() {
+            if (!emailVerified) {
+                document.getElementById('msg').innerHTML =
+                    '<div class="alert alert-error">❌ Please verify your email first</div>';
+                return;
+            }
+
+            const email    = document.getElementById('email').value.trim().toLowerCase();
+            const name     = document.getElementById('name').value.trim();
+            const phone    = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const msg      = document.getElementById('msg');
+
+            // Validate
+            let hasErr = false;
+            if (name.length < 2) {
+                document.getElementById('errName').classList.add('show'); hasErr = true;
+            }
+            if (phone && !phoneRe.test(phone.replace(/\D/g, ''))) {
+                document.getElementById('errPhone').classList.add('show'); hasErr = true;
+            }
+            if (password.length < 6) {
+                document.getElementById('errPass').classList.add('show'); hasErr = true;
+            }
+            if (hasErr) return;
+
+            const btn = document.getElementById('signupBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Creating...';
+
+            try {
+                await apiRequest('/auth/signup', 'POST',
+                    { name, email, phone: phone || null, password }, false);
+
+                msg.innerHTML = '<div class="alert alert-success">✅ Account created! Logging in...</div>';
+                const data = await loginRequest(email, password);
+                saveToken(data.access_token);
+                saveUser(data.user);
+                setTimeout(() => window.location.href = '/dashboard', 1200);
+
+            } catch(e) {
+                btn.disabled = false;
+                btn.textContent = '🚀 Create Account';
+                msg.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+            }
+        }
+    </script>
+    <script src="/static/js/travel-bg.js"></script>
+</body>
+</html>

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — GO-TRAVEL</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        /* ===== LAYOUT ===== */
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+        .dash-layout { display: flex; min-height: calc(100vh - 64px); }
+
+        /* ===== CENTER MODAL (Activity) ===== */
+        .side-drawer {
+            position: fixed; top: -100%; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 520px; max-height: 80vh;
+            background: #0F1F47; border-radius: 0 0 20px 20px;
+            transition: top 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 500;
+            overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .side-drawer.open { top: 64px; }
+        .drawer-header {
+            padding: 18px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+        .drawer-header h3 { color: #E8771E; margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .drawer-close { background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; width:32px;height:32px;border-radius:50%; display:flex;align-items:center;justify-content:center; transition:background .2s; }
+        .drawer-close:hover { background: rgba(255,255,255,0.2); }
+        .drawer-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink:0; }
+        .drawer-tab {
+            flex: 1; padding: 12px 8px; text-align: center; color: rgba(255,255,255,0.6);
+            cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        .drawer-tab.active { color: #E8771E; border-bottom-color: #E8771E; background: rgba(232,119,30,0.07); }
+        .drawer-content { padding: 16px; overflow-y: auto; flex:1; }
+        .drawer-item {
+            background: rgba(255,255,255,0.07); border-radius: 10px;
+            padding: 14px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .drawer-item .d-title { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .drawer-item .d-sub { color: rgba(255,255,255,0.55); font-size: 12px; }
+        .drawer-item .d-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .d-btn-del {
+            padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+            border: 1px solid rgba(255,100,100,0.5); background: rgba(255,80,80,0.15);
+            color: #ff8080; transition: all 0.2s;
+        }
+        .d-btn-del:hover { background: rgba(255,80,80,0.35); }
+        .d-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px;
+            font-weight: 700; text-transform: uppercase;
+        }
+        .badge-planned, .badge-pending { background: rgba(232,119,30,0.2); color: #E8771E; border: 1px solid rgba(232,119,30,0.3); }
+        .badge-confirmed { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-cancelled { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+        /* Modal overlay */
+        .drawer-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.55); z-index: 499; backdrop-filter: blur(2px);
+        }
+        .drawer-overlay.show { display: block; }
+
+        /* ===== NAV ===== */
+        .navbar {
+            position: sticky; top: 0; z-index: 300; background: #0F1F47;
+            padding: 0 24px; height: 64px; display: flex;
+            align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .navbar .logo { font-size: 22px; font-weight: 800; color: #fff; }
+        .navbar .logo span { color: #E8771E; }
+        .nav-right { display: flex; align-items: center; gap: 16px; }
+        .drawer-toggle {
+            background: rgba(232,119,30,0.15); border: 1px solid rgba(232,119,30,0.4);
+            color: #E8771E; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+            font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .drawer-toggle:hover { background: rgba(232,119,30,0.3); }
+
+        /* ===== PROFILE AVATAR NAV ===== */
+        .nav-profile-wrap { position: relative; }
+        .nav-avatar {
+            width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
+            cursor: pointer; border: 2px solid #E8771E; object-fit: cover;
+            background: #E8771E; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 16px;
+        }
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-dropdown {
+            display: none; position: absolute; top: 48px; right: 0; min-width: 180px;
+            background: #fff; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            overflow: hidden; z-index: 500;
+        }
+        .nav-dropdown.show { display: block; }
+        .nav-dropdown a {
+            display: block; padding: 12px 16px; color: #0F1F47; font-size: 14px;
+            text-decoration: none; transition: background 0.15s; border-bottom: 1px solid #f3f4f6;
+        }
+        .nav-dropdown a:hover { background: #f9fafb; }
+        .nav-dropdown a:last-child { border-bottom: none; color: #ef4444; }
+
+        /* ===== MAIN CONTENT ===== */
+        .dash-main { flex: 1; padding: 28px 24px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+        /* ===== SECTION CARDS ===== */
+        .section-card {
+            border-radius: 16px; padding: 28px; margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* Plan Trip - Deep Purple-Blue */
+        .section-plan {
+            background: linear-gradient(135deg, #1a1a4e 0%, #16213e 50%, #0f3460 100%);
+            color: white; position: relative; overflow: hidden;
+        }
+        .section-plan::before {
+            content: '✈'; position: absolute; right: -10px; top: -20px;
+            font-size: 150px; opacity: 0.05; transform: rotate(15deg);
+        }
+        .section-plan h2 { color: #fff; margin: 0 0 6px; font-size: 22px; }
+        .section-plan p { color: rgba(255,255,255,0.65); margin: 0 0 20px; font-size: 14px; }
+        .section-plan label { color: rgba(255,255,255,0.8) !important; }
+        .section-plan input {
+            background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important;
+            color: #fff !important;
+        }
+        .section-plan input::placeholder { color: rgba(255,255,255,0.4) !important; }
+        .btn-plan {
+            background: linear-gradient(135deg, #E8771E, #f59e0b);
+            color: white; border: none; padding: 13px 28px; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px;
+            transition: all 0.2s; box-shadow: 0 4px 15px rgba(232,119,30,0.4);
+        }
+        .btn-plan:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,119,30,0.5); }
+
+        /* Itinerary Result */
+        .itinerary-box {
+            background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 24px;
+            border: 2px solid #e0e7ff; box-shadow: 0 4px 20px rgba(99,102,241,0.1);
+        }
+        .itinerary-box h3 { color: #4338ca; margin: 0 0 4px; }
+        .itinerary-day {
+            border-left: 4px solid #6366f1; padding: 14px 18px; margin: 10px 0;
+            background: linear-gradient(135deg,#f5f3ff,#ede9fe); border-radius: 0 12px 12px 0;
+            box-shadow: 0 2px 8px rgba(99,102,241,.1);
+        }
+        .itinerary-day strong { color: #4338ca; font-size:15px; display:block; margin-bottom:6px; }
+        .itinerary-day .day-activities { color:#4c1d95; font-size:13px; line-height:1.7; white-space:pre-wrap; }
+        .itinerary-day .day-cost { display:inline-block; margin-top:8px; background:#6366f1; color:#fff; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+
+        /* Find Hotels - Teal-Green */
+        .section-hotels {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+            color: white;
+        }
+        .section-hotels::before {
+            content: '🏨'; position: absolute; right: 20px; top: 20px;
+            font-size: 60px; opacity: 0.15;
+        }
+        .section-hotels { position: relative; overflow: hidden; }
+        .section-hotels h2 { color: #fff; margin: 0 0 6px; }
+        .section-hotels p { color: rgba(255,255,255,0.65); margin: 0 0 20px; font-size: 14px; }
+        .section-hotels label { color: rgba(255,255,255,0.8) !important; }
+        .section-hotels select, .section-hotels input {
+            background: rgba(255,255,255,0.12) !important; border: 1px solid rgba(255,255,255,0.2) !important;
+            color: #fff !important;
+        }
+        .section-hotels select option { background: #065f46; color: #fff; }
+        .btn-hotels {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white; border: none; padding: 13px 28px; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px;
+            transition: all 0.2s; box-shadow: 0 4px 15px rgba(16,185,129,0.4);
+        }
+        .btn-hotels:hover { transform: translateY(-2px); }
+
+        /* Hotel Cards */
+        .hotels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+        .hotel-card {
+            background: #fff; border-radius: 14px; overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1); transition: transform 0.2s;
+        }
+        .hotel-card:hover { transform: translateY(-4px); }
+        .hotel-img {
+            height: 160px; background: linear-gradient(135deg, #0F1F47, #1a4480);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 50px; overflow: hidden; position: relative;
+        }
+        .hotel-body { padding: 14px; }
+        .hotel-body h3 { margin: 0 0 4px; color: #0F1F47; font-size: 15px; }
+        .hotel-city { color: #6b7280; font-size: 12px; margin-bottom: 8px; }
+        .hotel-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .hotel-rating { color: #f59e0b; font-weight: 700; font-size: 13px; }
+        .hotel-price { color: #0F1F47; font-weight: 700; font-size: 14px; }
+        .hotel-amenities { color: #9ca3af; font-size: 11px; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-book {
+            width: 100%; padding: 10px; background: linear-gradient(135deg, #0F1F47, #1a4480);
+            color: white; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-book:hover { opacity: 0.9; }
+
+        /* Form shared */
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+        .fg { display: flex; flex-direction: column; gap: 6px; }
+        .fg label { font-size: 13px; font-weight: 600; }
+        .fg input, .fg select {
+            padding: 11px 13px; border-radius: 8px; border: 1px solid #d1d5db;
+            font-size: 14px; outline: none; transition: border-color 0.2s;
+        }
+        .fg input:focus, .fg select:focus { border-color: #E8771E; }
+
+        /* Alert */
+        .alert { padding: 10px 16px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+        .alert-success { background: rgba(16,185,129,0.1); color: #065f46; border: 1px solid rgba(16,185,129,0.3); }
+        .alert-error { background: rgba(239,68,68,0.1); color: #991b1b; border: 1px solid rgba(239,68,68,0.3); }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #E8771E; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dash-main { padding: 16px; }
+            .section-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAV -->
+    <nav class="navbar">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:34px;height:34px;background:linear-gradient(135deg,#E8771E,#f59e0b);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(232,119,30,.4);">✈</div>
+                <a href="/" style="text-decoration:none;"><div class="logo">GO<span>-TRAVEL</span></div></a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="drawer-toggle" onclick="toggleDrawer()">
+                <span>☰</span> My Activity
+            </button>
+            <div class="nav-profile-wrap">
+                <div class="nav-avatar" id="navAvatarWrap" onclick="toggleDropdown()">
+                    <span id="navAvatarLetter">U</span>
+                </div>
+                <div class="nav-dropdown" id="navDropdown">
+                    <a href="/profile">👤 Dashboard</a>
+                    <a href="/profile">🔑 Change Password</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- DRAWER OVERLAY -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+
+    <!-- LEFT DRAWER — My Trips + My Bookings -->
+    <div class="side-drawer" id="sideDrawer">
+        <div class="drawer-header">
+            <h3>My Activity</h3>
+            <button class="drawer-close" onclick="toggleDrawer()">✕</button>
+        </div>
+        <div class="drawer-tabs">
+            <div class="drawer-tab active" id="dtabTrips" onclick="showDrawerTab('trips')">🗺 My Trips</div>
+            <div class="drawer-tab" id="dtabBookings" onclick="showDrawerTab('bookings')">🏨 Bookings</div>
+        </div>
+        <div class="drawer-content">
+            <div id="drawerTrips">
+                <p style="color:rgba(255,255,255,0.4);font-size:13px;">Loading trips...</p>
+            </div>
+            <div id="drawerBookings" style="display:none;">
+                <p style="color:rgba(255,255,255,0.4);font-size:13px;">Loading bookings...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="dash-main">
+
+        <!-- 1. PLAN A TRIP -->
+        <div class="section-card section-plan">
+            <h2>✈ Plan a New Trip (AI)</h2>
+            <p>Enter destination & budget — our AI agents will generate your full itinerary</p>
+            <div class="form-row">
+                <div class="fg">
+                    <label>Destination</label>
+                    <input type="text" id="destination" placeholder="e.g., Goa, Kerala, Manali">
+                </div>
+                <div class="fg">
+                    <label>Budget (INR)</label>
+                    <input type="number" id="budget" placeholder="e.g., 20000">
+                </div>
+                <div class="fg">
+                    <label>Duration (Days)</label>
+                    <input type="number" id="days" placeholder="e.g., 4">
+                </div>
+                <div class="fg">
+                    <label>Preferences (optional)</label>
+                    <input type="text" id="prefs" placeholder="e.g., beaches, food">
+                </div>
+            </div>
+            <div style="margin-top:16px;">
+                <button class="btn-plan" onclick="createTrip()">
+                    <span id="planBtnTxt">🤖 Generate AI Itinerary</span>
+                </button>
+            </div>
+            <div id="tripMsg" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- 2. ITINERARY RESULT (hidden until generated) -->
+        <div class="itinerary-box" id="itineraryBox" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                <div>
+                    <h3 id="itinTitle" style="margin:0;">📍 Itinerary</h3>
+                    <p id="itinSummary" style="color:#6366f1;font-size:13px;margin:4px 0 0;"></p>
+                </div>
+                <button class="btn-hotels" style="padding:10px 18px;font-size:13px;" onclick="scrollToHotels()">
+                    🏨 Find Hotels for this Trip
+                </button>
+            </div>
+            <div id="itinDays"></div>
+        </div>
+
+        <!-- 3. FIND HOTELS -->
+        <div class="section-card section-hotels" id="findHotelsSection">
+            <h2>🏨 Find Hotels</h2>
+            <p>Search hotels by state, city & budget — click a hotel to book</p>
+            <div class="form-row">
+                <div class="fg">
+                    <label>State</label>
+                    <select id="stateSelect" onchange="onStateChange()">
+                        <option value="">Select State</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label>City</label>
+                    <select id="citySelect">
+                        <option value="">Select City</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top:16px;">
+                <button class="btn-hotels" onclick="suggestHotels()">
+                    <span id="hotelBtnTxt">🔍 Suggest Hotels</span>
+                </button>
+            </div>
+            <div id="hotelMsg" style="margin-top:10px;"></div>
+            <div class="hotels-grid" id="hotelList"></div>
+        </div>
+
+    </div><!-- end dash-main -->
+
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/datepicker.js"></script>
+    <script>
+        requireAuth();
+        const user = getUser();
+        let LOCATIONS = {};
+        let lastTripId = null;
+
+        // ===== NAV SETUP =====
+        function setupNav() {
+            // Refresh user from localStorage in case profile was updated
+            const freshUser = getUser();
+            if (!freshUser) { window.location.href = '/login'; return; }
+            Object.assign(user, freshUser);
+            if (user.theme === 'dark') document.body.classList.add('dark');
+            const wrap = document.getElementById('navAvatarWrap');
+            if (user.photo_url && user.photo_url.startsWith('data:')) {
+                wrap.innerHTML = '<img src="' + user.photo_url + '" style="width:100%;height:100%;object-fit:cover;" alt="photo">';
+            } else {
+                const letter = (user.name || 'U')[0].toUpperCase();
+                document.getElementById('navAvatarLetter').textContent = letter;
+            }
+        }
+        setupNav();
+
+        function toggleDropdown() {
+            document.getElementById('navDropdown').classList.toggle('show');
+        }
+        document.addEventListener('click', e => {
+            const wrap = document.querySelector('.nav-profile-wrap');
+            if (!wrap.contains(e.target)) document.getElementById('navDropdown').classList.remove('show');
+        });
+
+        // ===== DRAWER =====
+        function toggleDrawer() {
+            document.getElementById('sideDrawer').classList.toggle('open');
+            document.getElementById('drawerOverlay').classList.toggle('show');
+            loadDrawerData();
+        }
+        function showDrawerTab(tab) {
+            document.getElementById('dtabTrips').classList.toggle('active', tab === 'trips');
+            document.getElementById('dtabBookings').classList.toggle('active', tab === 'bookings');
+            document.getElementById('drawerTrips').style.display = tab === 'trips' ? 'block' : 'none';
+            document.getElementById('drawerBookings').style.display = tab === 'bookings' ? 'block' : 'none';
+            if (tab === 'trips') loadDrawerTrips();
+            else loadDrawerBookings();
+        }
+        function loadDrawerData() {
+            loadDrawerTrips();
+            loadDrawerBookings();
+        }
+
+        async function loadDrawerTrips() {
+            const box = document.getElementById('drawerTrips');
+            try {
+                const trips = await apiRequest('/trips');
+                if (!trips.length) { box.innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:13px;text-align:center;padding:20px;">No trips yet.<br>Plan your first trip above!</p>'; return; }
+                box.innerHTML = trips.map(t => `
+                    <div class="drawer-item">
+                        <div class="d-title">📍 ${t.destination}</div>
+                        <div class="d-sub">${t.duration_days} days · Budget ₹${t.budget}</div>
+                        <div class="d-sub" style="margin-top:4px;">
+                            <span class="d-badge badge-${t.status}">${t.status}</span>
+                        </div>
+                        <div class="d-actions">
+                            <button class="d-btn-del" onclick="deleteTrip(${t.trip_id})">🗑 Delete Trip</button>
+                        </div>
+                    </div>`).join('');
+            } catch(e) { box.innerHTML = '<p style="color:#ef4444;font-size:12px;">' + e.message + '</p>'; }
+        }
+
+        async function loadDrawerBookings() {
+            const box = document.getElementById('drawerBookings');
+            try {
+                const b = await apiRequest('/bookings');
+                if (!b.length) { box.innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:13px;text-align:center;padding:20px;">No bookings yet.<br>Find hotels below!</p>'; return; }
+                box.innerHTML = b.map(x => `
+                    <div class="drawer-item">
+                        <div class="d-title">🏨 Booking #${x.booking_id}</div>
+                        <div class="d-sub">₹${x.total_amount}</div>
+                        <div class="d-sub" style="margin-top:4px;">
+                            <span class="d-badge badge-${x.status}">${x.status}</span>
+                        </div>
+                        <div class="d-actions">
+                            <button class="d-btn-del" onclick="cancelBooking(${x.booking_id})">✕ Cancel</button>
+                            <button class="d-btn-del" style="border-color:rgba(100,100,255,0.5);color:#aaaaff;background:rgba(80,80,255,0.15);" onclick="deleteBooking(${x.booking_id})">🗑 Delete</button>
+                        </div>
+                    </div>`).join('');
+            } catch(e) { box.innerHTML = '<p style="color:#ef4444;font-size:12px;">' + e.message + '</p>'; }
+        }
+
+        async function deleteTrip(id) {
+            if (!confirm('Delete this trip?')) return;
+            try { await apiRequest('/trips/' + id, 'DELETE'); loadDrawerTrips(); }
+            catch(e) { alert('Error: ' + e.message); }
+        }
+        async function cancelBooking(id) {
+            if (!confirm('Cancel this booking?')) return;
+            try { await apiRequest('/bookings/' + id + '/cancel', 'POST'); loadDrawerBookings(); }
+            catch(e) { alert('Error: ' + e.message); }
+        }
+        async function deleteBooking(id) {
+            if (!confirm('Permanently delete this booking?')) return;
+            try { await apiRequest('/bookings/' + id, 'DELETE'); loadDrawerBookings(); }
+            catch(e) { alert('Error: ' + e.message); }
+        }
+
+        // ===== PLAN TRIP =====
+        async function createTrip() {
+            const destination = document.getElementById('destination').value.trim();
+            const budget = parseFloat(document.getElementById('budget').value);
+            const duration_days = parseInt(document.getElementById('days').value);
+            const preferences = document.getElementById('prefs').value.trim();
+            const msg = document.getElementById('tripMsg');
+            const btn = document.getElementById('planBtnTxt');
+
+            if (!destination || !budget || !duration_days) {
+                msg.innerHTML = '<div class="alert alert-error">Please fill Destination, Budget and Days</div>';
+                return;
+            }
+            btn.innerHTML = '<span class="spinner"></span>AI agents planning your trip...';
+            msg.innerHTML = '';
+            document.getElementById('itineraryBox').style.display = 'none';
+
+            try {
+                const trip = await apiRequest('/trips', 'POST', { destination, budget, duration_days, preferences });
+                btn.innerHTML = '🤖 Generate AI Itinerary';
+                msg.innerHTML = '<div class="alert alert-success">✅ Trip created! Check itinerary below.</div>';
+                lastTripId = trip.trip_id;
+                showItinerary(trip);
+                loadDrawerTrips();
+            } catch(e) {
+                btn.innerHTML = '🤖 Generate AI Itinerary';
+                msg.innerHTML = '<div class="alert alert-error">' + e.message + '</div>';
+            }
+        }
+
+        function showItinerary(trip) {
+            document.getElementById('itineraryBox').style.display = 'block';
+            document.getElementById('itinTitle').innerHTML = '📍 <span style="font-family:Georgia,serif;font-style:italic;">' + trip.destination + '</span> — ' + trip.duration_days + ' Days';
+            const summary = trip.ai_generated_plan || '';
+            document.getElementById('itinSummary').innerHTML = summary ? '✨ ' + summary : '';
+            const daysBox = document.getElementById('itinDays');
+            const days = trip.itinerary_days || [];
+            if (days.length === 0 && summary) {
+                // Parse plain text itinerary into days
+                const lines = summary.split('\n').filter(l => l.trim());
+                daysBox.innerHTML = lines.map((l,i) => `
+                    <div class="itinerary-day" style="animation:fadeIn .4s ease ${i*0.1}s both;">
+                        <strong>📅 Day ${i+1}</strong>
+                        <div class="day-activities">${l.replace(/Day \d+[:\-]?/i,'').trim()}</div>
+                    </div>`).join('');
+            } else {
+                daysBox.innerHTML = days.map((d,i) => `
+                    <div class="itinerary-day" style="animation:fadeIn .4s ease ${i*0.1}s both;">
+                        <strong>📅 Day ${d.day_number}</strong>
+                        <div class="day-activities">${(d.activities||'Rest & explore locally').replace(/\n/g,'<br>')}</div>
+                        <span class="day-cost">💰 Est. ₹${d.estimated_cost || 0}</span>
+                    </div>`).join('');
+            }
+            document.getElementById('itineraryBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function scrollToHotels() {
+            document.getElementById('findHotelsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ===== FIND HOTELS =====
+        async function loadLocations() {
+            LOCATIONS = await apiRequest('/hotels/locations', 'GET', null, false);
+            const ss = document.getElementById('stateSelect');
+            Object.keys(LOCATIONS).forEach(st => {
+                const o = document.createElement('option'); o.value = st; o.textContent = st;
+                ss.appendChild(o);
+            });
+            const params = new URLSearchParams(window.location.search);
+            const pState = params.get('state');
+            const pCity = params.get('city');
+            const pDest = params.get('dest');
+
+            // dest param — find matching state
+            let autoState = pState, autoCity = pCity;
+            if (pDest && !pState) {
+                // Check if dest matches a state or city
+                const destLow = pDest.toLowerCase();
+                for (const [st, cities] of Object.entries(LOCATIONS)) {
+                    if (st.toLowerCase().includes(destLow) || destLow.includes(st.toLowerCase())) {
+                        autoState = st; autoCity = cities[0]; break;
+                    }
+                    const matchCity = cities.find(c => c.toLowerCase().includes(destLow) || destLow.includes(c.toLowerCase()));
+                    if (matchCity) { autoState = st; autoCity = matchCity; break; }
+                }
+            }
+
+            if (autoState && LOCATIONS[autoState]) {
+                ss.value = autoState;
+                onStateChange();
+                if (autoCity) {
+                    setTimeout(() => {
+                        const cs = document.getElementById('citySelect');
+                        cs.value = autoCity;
+                        // Auto-trigger hotel search
+                        suggestHotels();
+                        // Scroll to hotels section
+                        setTimeout(() => document.getElementById('findHotelsSection').scrollIntoView({behavior:'smooth'}), 800);
+                    }, 100);
+                }
+            }
+        }
+
+        function onStateChange() {
+            const st = document.getElementById('stateSelect').value;
+            const cs = document.getElementById('citySelect');
+            cs.innerHTML = '<option value="">Select City</option>';
+            (LOCATIONS[st] || []).forEach(c => {
+                const o = document.createElement('option'); o.value = c; o.textContent = c; cs.appendChild(o);
+            });
+        }
+
+        async function suggestHotels() {
+            const state = document.getElementById('stateSelect').value;
+            const city = document.getElementById('citySelect').value;
+            const list = document.getElementById('hotelList');
+            const msg = document.getElementById('hotelMsg');
+            const btn = document.getElementById('hotelBtnTxt');
+            msg.innerHTML = ''; list.innerHTML = '';
+            if (!state) { msg.innerHTML = '<div class="alert alert-error">Please select a State</div>'; return; }
+            if (!city) { msg.innerHTML = '<div class="alert alert-error">Please select a City</div>'; return; }
+            btn.innerHTML = '<span class="spinner"></span>Searching...';
+            try {
+                const hotels = await apiRequest('/hotels/suggest?state=' + encodeURIComponent(state) +
+                    '&city=' + encodeURIComponent(city));
+                btn.innerHTML = '🔍 Suggest Hotels';
+                if (!hotels.length) { msg.innerHTML = '<div class="alert alert-error">No hotels found in this area</div>'; return; }
+                msg.innerHTML = '<div class="alert alert-success">✅ Found ' + hotels.length + ' hotels in ' + city + '!</div>';
+                hotels.forEach(h => list.appendChild(hotelCard(h)));
+            } catch(e) { btn.innerHTML = '🔍 Suggest Hotels'; msg.innerHTML = '<div class="alert alert-error">' + e.message + '</div>'; }
+        }
+
+        const HOTEL_EMOJIS = ['🏨','🏩','🏪','🌟','🏝','🌴','🏔','🗼'];
+        function hotelCard(h) {
+            const div = document.createElement('div');
+            div.className = 'hotel-card';
+
+            // Image ya emoji — image_url hai to photo dikhao, nahi to emoji fallback
+            const emoji = HOTEL_EMOJIS[h.hotel_id % HOTEL_EMOJIS.length];
+            let imgHTML = '';
+            if (h.image_url && h.image_url.includes('.jpg') || h.image_url && h.image_url.includes('.webp') || h.image_url && h.image_url.includes('.png')) {
+                // Real image — load karo, error pe emoji dikhao
+                imgHTML = `<div class="hotel-img" style="padding:0;">
+                    <img src="${h.image_url}"
+                         alt="${h.name}"
+                         style="width:100%;height:100%;object-fit:cover;display:block;"
+                         onerror="this.parentElement.innerHTML='${emoji}';this.parentElement.style.fontSize='50px';this.parentElement.style.display='flex';this.parentElement.style.alignItems='center';this.parentElement.style.justifyContent='center';">
+                </div>`;
+            } else {
+                imgHTML = `<div class="hotel-img">${emoji}</div>`;
+            }
+
+            div.innerHTML = `
+                ${imgHTML}
+                <div class="hotel-body">
+                    <h3>${h.name}</h3>
+                    <div class="hotel-city">📍 ${h.city}, ${h.state}</div>
+                    <div class="hotel-meta">
+                        <span class="hotel-rating">⭐ ${h.rating}</span>
+                        <span class="hotel-price">₹${h.price_per_night}/night</span>
+                    </div>
+                    <div class="hotel-amenities">✓ ${(h.amenities||'').replace(/,/g,' · ')}</div>
+                    <button class="btn-book" onclick="bookHotel(${h.hotel_id})">📅 Book Now</button>
+                </div>`;
+            return div;
+        }
+
+        async function bookHotel(hotelId) {
+            openDatePicker(async (checkIn, checkOut) => {
+                try {
+                    const booking = await apiRequest('/bookings', 'POST', {
+                        hotel_id: hotelId,
+                        check_in: checkIn + 'T12:00:00',
+                        check_out: checkOut + 'T11:00:00',
+                        trip_id: lastTripId || null,
+                    });
+                    const order = await apiRequest('/payments/create', 'POST', { booking_id: booking.booking_id });
+                    // ALWAYS show payment modal — user gets to choose saved card OR Razorpay
+                    await showPaymentModal(order, booking);
+                } catch(e) { alert('Booking error: ' + e.message); }
+            });
+        }
+
+        // ─────────────────────────────────────────────────────
+        // PAYMENT MODAL
+        // User ko 2 options milte hain:
+        //   1. Saved Card / UPI - phone OTP se verify
+        //   2. Razorpay - secure checkout
+        // ─────────────────────────────────────────────────────
+
+        async function showPaymentModal(order, booking) {
+            // Pehle user ke saved payment methods fetch karo
+            let savedMethods = [];
+            try {
+                savedMethods = await apiRequest('/profile/payment-methods');
+            } catch(e) {
+                // Saved methods fetch na ho to bhi chalta hai
+                console.log('Could not load saved methods:', e.message);
+            }
+
+            // Purana modal hata do (agar tha)
+            const existing = document.getElementById('payOverlay');
+            if (existing) existing.remove();
+
+            // Backdrop banao
+            const overlay = document.createElement('div');
+            overlay.id = 'payOverlay';
+            overlay.style.cssText = [
+                'position:fixed', 'inset:0', 'z-index:9999',
+                'background:rgba(0,0,0,0.65)', 'backdrop-filter:blur(4px)',
+                'display:flex', 'align-items:center', 'justify-content:center'
+            ].join(';');
+
+            // Saved methods ki list banao
+            let savedMethodsHTML = '';
+            if (savedMethods.length > 0) {
+                savedMethodsHTML = `
+                    <div style="margin-bottom:6px;color:rgba(255,255,255,.5);
+                                font-size:11px;text-transform:uppercase;letter-spacing:1px;">
+                        Your Saved Methods
+                    </div>
+                    ${savedMethods.map(m => `
+                        <div class="pay-opt" data-id="${m.method_id}"
+                             style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+                                    border:2px solid rgba(255,255,255,.1);border-radius:10px;
+                                    cursor:pointer;margin-bottom:8px;background:rgba(255,255,255,.04);
+                                    transition:all .2s;"
+                             onclick="selectSavedMethod(this)">
+                            <span style="font-size:22px;">${m.method_type === 'card' ? '💳' : '📱'}</span>
+                            <div style="flex:1;">
+                                <div style="color:#fff;font-weight:700;font-size:14px;">
+                                    ${m.label || m.method_type.toUpperCase()}
+                                </div>
+                                <div style="color:rgba(255,255,255,.45);font-size:12px;">
+                                    ${m.masked_value || ''}
+                                </div>
+                            </div>
+                            <div class="pay-radio"
+                                 style="width:18px;height:18px;border-radius:50%;
+                                        border:2px solid rgba(255,255,255,.3);flex-shrink:0;">
+                            </div>
+                        </div>`).join('')}
+                    <button onclick="startSavedCardFlow()"
+                            style="width:100%;padding:14px;margin-bottom:10px;
+                                   background:linear-gradient(135deg,#065f46,#047857);
+                                   color:#fff;border:none;border-radius:12px;
+                                   font-size:15px;font-weight:700;cursor:pointer;">
+                        💳 Pay with Saved Card / UPI
+                    </button>`;
+            } else {
+                savedMethodsHTML = `
+                    <p style="color:rgba(255,255,255,.4);font-size:13px;margin-bottom:12px;">
+                        No saved cards — <a href="/profile" style="color:#E8771E;">Add one</a>
+                    </p>`;
+            }
+
+            overlay.innerHTML = `
+                <div style="background:#0F1F47;border-radius:22px;width:94%;max-width:440px;
+                            overflow:hidden;animation:slideUp .35s cubic-bezier(.34,1.56,.64,1);">
+
+                    <!-- Amount Header -->
+                    <div style="background:linear-gradient(135deg,#16213e,#0f3460);
+                                padding:22px 24px 16px;position:relative;">
+                        <div style="color:rgba(255,255,255,.5);font-size:11px;
+                                    text-transform:uppercase;letter-spacing:1.5px;">Total Amount</div>
+                        <div style="color:#E8771E;font-size:32px;font-weight:900;">
+                            ₹${order.amount}
+                        </div>
+                        <button onclick="closePayModal()"
+                                style="position:absolute;top:16px;right:16px;
+                                       background:rgba(255,255,255,.1);border:none;
+                                       color:#fff;width:30px;height:30px;
+                                       border-radius:50%;cursor:pointer;font-size:16px;">✕</button>
+                    </div>
+
+                    <!-- Payment Options -->
+                    <div style="padding:20px 24px;">
+                        ${savedMethodsHTML}
+
+                        <!-- Divider -->
+                        <div style="display:flex;align-items:center;gap:10px;margin:14px 0 12px;">
+                            <div style="flex:1;height:1px;background:rgba(255,255,255,.1);"></div>
+                            <span style="color:rgba(255,255,255,.35);font-size:12px;">OR</span>
+                            <div style="flex:1;height:1px;background:rgba(255,255,255,.1);"></div>
+                        </div>
+
+                        <!-- Razorpay Option -->
+                        <button onclick="payViaRazorpay()"
+                                style="width:100%;padding:14px;
+                                       background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                                       color:#fff;border:none;border-radius:12px;
+                                       font-size:15px;font-weight:700;cursor:pointer;
+                                       display:flex;align-items:center;justify-content:center;gap:8px;">
+                            💠 Pay via Razorpay
+                        </button>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(overlay);
+
+            // Order save karo - baad mein zaroorat padegi
+            window._currentOrder = order;
+        }
+
+
+        // Saved method select/deselect karo
+        function selectSavedMethod(el) {
+            document.querySelectorAll('.pay-opt').forEach(opt => {
+                opt.style.borderColor = 'rgba(255,255,255,.1)';
+                opt.style.background  = 'rgba(255,255,255,.04)';
+                opt.querySelector('.pay-radio').style.background = '';
+            });
+            el.style.borderColor = '#E8771E';
+            el.style.background  = 'rgba(232,119,30,.12)';
+            el.querySelector('.pay-radio').style.background = '#E8771E';
+        }
+
+
+        // Razorpay checkout kholo
+        function payViaRazorpay() {
+            closePayModal();
+            if (window._currentOrder) {
+                openRazorpay(window._currentOrder);
+            }
+        }
+
+
+        // Modal band karo
+        function closePayModal() {
+            ['payOverlay', 'otpPayOverlay'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.remove();
+            });
+        }
+
+
+        // ─────────────────────────────────────────────────────
+        // SAVED CARD OTP FLOW
+        // User phone number deta hai, OTP aata hai, verify karo
+        // ─────────────────────────────────────────────────────
+
+        function startSavedCardFlow() {
+            // Main payment modal band karo
+            const mainModal = document.getElementById('payOverlay');
+            if (mainModal) mainModal.remove();
+
+            const user = getUser() || {};
+            const phone = user.phone || '';
+            const amount = window._currentOrder ? window._currentOrder.amount : '';
+
+            // OTP verification modal banao
+            const overlay = document.createElement('div');
+            overlay.id = 'otpPayOverlay';
+            overlay.style.cssText = [
+                'position:fixed', 'inset:0', 'z-index:9999',
+                'background:rgba(0,0,0,0.7)', 'backdrop-filter:blur(4px)',
+                'display:flex', 'align-items:center', 'justify-content:center'
+            ].join(';');
+
+            overlay.innerHTML = `
+                <div style="background:#0F1F47;border-radius:22px;width:94%;max-width:400px;
+                            overflow:hidden;animation:slideUp .35s cubic-bezier(.34,1.56,.64,1);">
+
+                    <!-- Amount Header -->
+                    <div style="background:linear-gradient(135deg,#065f46,#047857);
+                                padding:20px 24px;">
+                        <div style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:4px;">
+                            Confirm Payment via Saved Card
+                        </div>
+                        <div style="color:#fff;font-size:28px;font-weight:900;">₹${amount}</div>
+                    </div>
+
+                    <!-- Phone Number Step -->
+                    <div style="padding:24px;" id="otpStep1">
+                        <p style="color:rgba(255,255,255,.7);font-size:14px;margin:0 0 16px;">
+                            🔐 Enter your phone number to receive OTP for payment verification
+                        </p>
+                        <div style="margin-bottom:14px;">
+                            <label style="color:rgba(255,255,255,.6);font-size:12px;
+                                          display:block;margin-bottom:6px;">Phone Number</label>
+                            <input type="tel" id="payPhoneInput" value="${phone}"
+                                   placeholder="10-digit mobile number" maxlength="10"
+                                   style="width:100%;padding:12px;border-radius:8px;
+                                          border:1px solid rgba(255,255,255,.2);
+                                          background:rgba(255,255,255,.08);color:#fff;
+                                          font-size:16px;box-sizing:border-box;letter-spacing:2px;">
+                        </div>
+                        <div id="otpPhoneError" style="color:#ef4444;font-size:12px;
+                                                        margin-bottom:10px;display:none;"></div>
+                        <button onclick="sendPaymentOTP()"
+                                style="width:100%;padding:13px;background:#E8771E;color:#fff;
+                                       border:none;border-radius:10px;font-weight:700;
+                                       font-size:15px;cursor:pointer;">
+                            📱 Send OTP
+                        </button>
+                        <button onclick="closePayModal()"
+                                style="width:100%;margin-top:8px;padding:11px;
+                                       background:rgba(255,255,255,.07);
+                                       color:rgba(255,255,255,.6);
+                                       border:1px solid rgba(255,255,255,.12);
+                                       border-radius:10px;cursor:pointer;font-size:13px;">
+                            ← Back
+                        </button>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(overlay);
+        }
+
+
+        // Phone validate karke OTP bhejo (test mode mein screen pe dikhao)
+        function sendPaymentOTP() {
+            const phone = document.getElementById('payPhoneInput').value.trim().replace(/\D/g, '');
+            const errEl = document.getElementById('otpPhoneError');
+
+            // Phone validate karo
+            if (!phone || phone.length !== 10 || !/^[6-9]/.test(phone)) {
+                errEl.textContent = '❌ Valid 10-digit mobile number daalo (6-9 se shuru)';
+                errEl.style.display = 'block';
+                return;
+            }
+            errEl.style.display = 'none';
+
+            // 6-digit OTP generate karo (test mode)
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            window._paymentOTP   = otp;
+            window._paymentPhone = phone;
+
+            // Phone step hata do, OTP step dikhao
+            document.getElementById('otpStep1').innerHTML = `
+                <p style="color:rgba(255,255,255,.7);font-size:14px;margin:0 0 14px;">
+                    Enter the OTP sent to <strong style="color:#fff;">+91 ${phone}</strong>
+                </p>
+
+                <!-- Test mode OTP display -->
+                <div style="background:linear-gradient(135deg,#1a4480,#0f3460);
+                            border:2px solid #E8771E;border-radius:12px;
+                            padding:18px;text-align:center;margin-bottom:16px;">
+                    <div style="color:rgba(255,255,255,.5);font-size:10px;
+                                text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+                        🧪 Test Mode — Your OTP
+                    </div>
+                    <div style="color:#E8771E;font-size:38px;font-weight:900;
+                                letter-spacing:10px;font-family:monospace;">
+                        ${otp}
+                    </div>
+                    <button onclick="document.getElementById('otpValueInput').value='${otp}'"
+                            style="margin-top:10px;background:#E8771E;color:#fff;border:none;
+                                   padding:7px 18px;border-radius:7px;cursor:pointer;
+                                   font-weight:700;font-size:13px;">
+                        ⚡ Auto-fill
+                    </button>
+                </div>
+
+                <!-- OTP Input -->
+                <div style="margin-bottom:14px;">
+                    <label style="color:rgba(255,255,255,.6);font-size:12px;
+                                  display:block;margin-bottom:6px;">Enter OTP</label>
+                    <input type="text" id="otpValueInput" maxlength="6"
+                           placeholder="• • • • • •"
+                           style="width:100%;padding:12px;border-radius:8px;
+                                  border:1px solid rgba(255,255,255,.2);
+                                  background:rgba(255,255,255,.08);color:#fff;
+                                  font-size:24px;text-align:center;letter-spacing:10px;
+                                  font-weight:700;box-sizing:border-box;"
+                           onkeypress="if(event.key==='Enter') verifyAndPay()">
+                </div>
+
+                <div id="otpVerifyError" style="color:#ef4444;font-size:12px;
+                                                 margin-bottom:10px;display:none;"></div>
+
+                <button onclick="verifyAndPay()"
+                        style="width:100%;padding:13px;
+                               background:linear-gradient(135deg,#E8771E,#f59e0b);
+                               color:#fff;border:none;border-radius:10px;
+                               font-weight:700;font-size:15px;cursor:pointer;">
+                    ✅ Verify & Pay ₹${window._currentOrder ? window._currentOrder.amount : ''}
+                </button>
+                <button onclick="closePayModal()"
+                        style="width:100%;margin-top:8px;padding:11px;
+                               background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);
+                               border:1px solid rgba(255,255,255,.12);
+                               border-radius:10px;cursor:pointer;font-size:13px;">
+                    Cancel
+                </button>`;
+        }
+
+
+        // OTP verify karo aur payment complete karo
+        async function verifyAndPay() {
+            const enteredOTP = document.getElementById('otpValueInput').value.trim();
+            const errEl      = document.getElementById('otpVerifyError');
+
+            // OTP match check karo
+            if (enteredOTP !== window._paymentOTP) {
+                errEl.textContent = '❌ Wrong OTP — please check and try again';
+                errEl.style.display = 'block';
+                return;
+            }
+            errEl.style.display = 'none';
+
+            // OTP sahi hai - payment complete karo
+            errEl.style.color = '#10b981';
+            errEl.textContent = '✅ OTP verified! Processing payment...';
+            errEl.style.display = 'block';
+
+            try {
+                const order = window._currentOrder;
+
+                // Payment verify API call karo
+                // payment_id "savedcard_" se shuru hota hai
+                // isliye server automatically Razorpay signature check skip karta hai
+                await apiRequest('/payments/verify', 'POST', {
+                    payment_id:          order.payment_id,
+                    order_id:            order.order_id,
+                    razorpay_payment_id: 'savedcard_' + Date.now(),
+                    razorpay_signature:  'saved_card_otp_verified',
+                });
+
+                // Payment done - thank you page pe jao
+                closePayModal();
+                window.location.href = '/thank-you';
+
+            } catch(e) {
+                errEl.style.color = '#ef4444';
+                errEl.textContent = '❌ Payment failed: ' + e.message;
+                errEl.style.display = 'block';
+            }
+        }
+
+
+        function openRazorpay(order) {
+            const u = getUser() || {};
+            // Use logged-in user's actual phone number
+            const userPhone = u.phone ? (u.phone.startsWith('+91') ? u.phone : '+91' + u.phone) : '';
+            new Razorpay({
+                key: order.key_id, amount: order.amount * 100, currency: order.currency,
+                name: 'GO-TRAVEL', description: 'Hotel Booking', order_id: order.order_id,
+                handler: async function(r) {
+                    try {
+                        await apiRequest('/payments/verify', 'POST', {
+                            payment_id: order.payment_id, order_id: r.razorpay_order_id,
+                            razorpay_payment_id: r.razorpay_payment_id, razorpay_signature: r.razorpay_signature,
+                        });
+                        window.location.href = '/thank-you';
+                    } catch(e) { alert('Verification failed: ' + e.message); }
+                },
+                prefill: { name: u.name || '', email: u.email || '', contact: userPhone },
+                theme: { color: '#E8771E' },
+            }).open();
+        }
+
+        loadLocations();
+    </script>
+    <script src="/static/js/travel-bg.js"></script>
+    <script src="/static/js/chatbot.js"></script>
+    <!-- Simple footer -->
+    <footer style="background:#0F1F47;color:rgba(255,255,255,.4);text-align:center;padding:24px 20px;font-size:12px;margin-top:40px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
+            <div style="width:28px;height:28px;background:linear-gradient(135deg,#E8771E,#f59e0b);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;">✈</div>
+            <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;">GO<span style="color:#E8771E;">-TRAVEL</span></a>
+        </div>
+        <div style="display:flex;justify-content:center;gap:16px;margin-bottom:10px;">
+            <div style="text-align:center;">
+                <a href="https://instagram.com" target="_blank" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f09433,#dc2743,#bc1888);display:flex;align-items:center;justify-content:center;text-decoration:none;margin:0 auto;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                </a>
+                <div style="font-size:10px;margin-top:4px;color:rgba(255,255,255,.5);">Instagram</div>
+            </div>
+            <div style="text-align:center;">
+                <a href="https://x.com" target="_blank" style="width:36px;height:36px;border-radius:10px;background:#000;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px;text-decoration:none;margin:0 auto;">𝕏</a>
+                <div style="font-size:10px;margin-top:4px;color:rgba(255,255,255,.5);">X</div>
+            </div>
+            <div style="text-align:center;">
+                <a href="https://linkedin.com/in/ankit-aryan-11a974232" target="_blank" style="width:36px;height:36px;border-radius:10px;background:#0077b5;display:flex;align-items:center;justify-content:center;text-decoration:none;margin:0 auto;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+                <div style="font-size:10px;margin-top:4px;color:rgba(255,255,255,.5);">LinkedIn</div>
+            </div>
+            <div style="text-align:center;">
+                <a href="https://facebook.com" target="_blank" style="width:36px;height:36px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;text-decoration:none;margin:0 auto;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <div style="font-size:10px;margin-top:4px;color:rgba(255,255,255,.5);">Facebook</div>
+            </div>
+        </div>
+        <div style="margin-top:6px;">© 2026 GO-TRAVEL · Ankit Aryan · CIMAGE College, Patna</div>
+    </footer>
+</body>
+</html>

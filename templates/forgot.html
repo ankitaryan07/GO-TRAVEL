@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password — GO-TRAVEL</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .otp-box {
+            background: linear-gradient(135deg, #1a4480, #0F1F47);
+            border: 2px solid #E8771E; border-radius: 14px; padding: 20px;
+            text-align: center; margin: 14px 0; animation: bounceIn .4s ease;
+        }
+        @keyframes bounceIn { 0%{opacity:0;transform:scale(.9)} 60%{transform:scale(1.03)} 100%{opacity:1;transform:scale(1)} }
+        .otp-code { color: #E8771E; font-size: 42px; font-weight: 900; letter-spacing: 12px; font-family: monospace; text-shadow: 0 0 20px rgba(232,119,30,.5); }
+        .otp-lbl { color: rgba(255,255,255,.55); font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .btn-autofill { margin-top: 10px; background: #E8771E; color: #fff; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: transform .15s; }
+        .btn-autofill:hover { transform: scale(1.05); }
+        .email-sent-note { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #10b981; margin-top: 8px; text-align: left; }
+        .step-row { display:flex; align-items:center; gap:6px; margin-bottom: 20px; }
+        .sdot { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; transition: all .3s; }
+        .sdot-idle { background: rgba(255,255,255,.1); color: rgba(255,255,255,.3); }
+        .sdot-active { background: #E8771E; color: #fff; box-shadow: 0 0 12px rgba(232,119,30,.5); }
+        .sdot-done { background: #10b981; color: #fff; }
+        .sline { flex:1; height:2px; background: rgba(255,255,255,.1); }
+        .otp-input { text-align:center !important; font-size:22px !important; letter-spacing:10px !important; font-weight:700 !important; }
+    </style>
+</head>
+<body>
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;">
+                <div style="width:40px;height:40px;background:linear-gradient(135deg,#E8771E,#f59e0b);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 14px rgba(232,119,30,.5);">✈</div>
+                <h1 style="margin:0;">GO<span>-TRAVEL</span></h1>
+            </div>
+            <p class="subtitle">Reset your password</p>
+
+            <div class="step-row">
+                <div class="sdot sdot-active" id="s1">1</div>
+                <div class="sline" id="sl1"></div>
+                <div class="sdot sdot-idle" id="s2">2</div>
+                <div class="sline" id="sl2"></div>
+                <div class="sdot sdot-idle" id="s3">3</div>
+            </div>
+
+            <div id="msg"></div>
+
+            <!-- Step 1: Email -->
+            <div id="step1">
+                <p style="color:rgba(255,255,255,.65);font-size:13px;margin-bottom:16px;">
+                    📧 Enter your registered email address
+                </p>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="yourname@gmail.com"
+                           onkeypress="if(event.key==='Enter')sendOTP()">
+                </div>
+                <button class="btn btn-block" id="sendBtn" onclick="sendOTP()">
+                    📬 Send OTP to Email
+                </button>
+            </div>
+
+            <!-- Step 2: OTP -->
+            <div id="step2" style="display:none;">
+                <div id="otpDisplay"></div>
+                <div class="form-group" style="margin-top:4px;">
+                    <label>Enter 6-Digit OTP</label>
+                    <input type="text" id="otpInput" class="otp-input" 
+                           placeholder="• • • • • •" maxlength="6"
+                           onkeypress="if(event.key==='Enter')verifyOTP()"
+                           style="font-size:22px;letter-spacing:10px;text-align:center;font-weight:700;">
+                </div>
+                <button class="btn btn-block" onclick="verifyOTP()">✅ Verify OTP</button>
+                <p style="text-align:center;margin-top:12px;">
+                    <a href="#" onclick="sendOTP();return false;"
+                       style="color:rgba(255,255,255,.4);font-size:12px;">↺ Resend OTP</a>
+                </p>
+            </div>
+
+            <!-- Step 3: New password -->
+            <div id="step3" style="display:none;">
+                <p style="color:rgba(255,255,255,.65);font-size:13px;margin-bottom:16px;">
+                    🔑 OTP verified! Create your new password
+                </p>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newpass" placeholder="Minimum 6 characters">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirmpass" placeholder="Re-enter new password"
+                           onkeypress="if(event.key==='Enter')resetPassword()">
+                </div>
+                <button class="btn btn-block" onclick="resetPassword()">
+                    🔑 Reset Password
+                </button>
+            </div>
+
+            <p class="switch" style="margin-top:16px;"><a href="/login">← Back to Login</a></p>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        let userEmail = '', userOTP = '';
+
+        function goStep(n) {
+            [1,2,3].forEach(i => {
+                document.getElementById('step'+i).style.display = (i===n)?'block':'none';
+                const dot = document.getElementById('s'+i);
+                dot.className = 'sdot ' + (i<n ? 'sdot-done' : i===n ? 'sdot-active' : 'sdot-idle');
+            });
+        }
+
+        async function sendOTP() {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const msg = document.getElementById('msg');
+            
+            if (!email || !email.includes('@') || !email.includes('.')) {
+                msg.innerHTML = '<div class="alert alert-error">❌ Enter a valid email address</div>';
+                return;
+            }
+            
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
+            
+            try {
+                const res = await apiRequest('/auth/forgot-password', 'POST', { email }, false);
+                userEmail = email;
+                goStep(2);
+                
+                const box = document.getElementById('otpDisplay');
+                
+                if (res && res.test_otp) {
+                    // Test mode — OTP screen pe bada dikhao
+                    box.innerHTML = `
+                        <div class="otp-box">
+                            <div class="otp-lbl">🧪 TEST MODE — Your OTP</div>
+                            <div class="otp-code">${res.test_otp}</div>
+                            <div style="color:rgba(255,255,255,.4);font-size:11px;margin-top:6px;">
+                                Valid for 10 minutes
+                            </div>
+                            <button class="btn-autofill"
+                                onclick="document.getElementById('otpInput').value='${res.test_otp}';document.getElementById('otpInput').focus();">
+                                ⚡ Auto-fill OTP
+                            </button>
+                        </div>
+                        ${res.email_sent ? 
+                            '<div class="email-sent-note">✉️ OTP also sent to <strong>' + email + '</strong> — check inbox & spam</div>' 
+                            : '<div style="color:rgba(255,255,255,.35);font-size:11px;margin-top:6px;text-align:center;">Email not configured — use the OTP shown above</div>'
+                        }`;
+                } else {
+                    // Email sent successfully but no test_otp
+                    box.innerHTML = `
+                        <div class="email-sent-note" style="font-size:13px;">
+                            ✉️ OTP sent to <strong>${email}</strong><br>
+                            Check your inbox and spam folder
+                        </div>`;
+                }
+                
+                msg.innerHTML = '<div class="alert alert-success">✅ OTP sent!</div>';
+                
+            } catch(e) {
+                btn.disabled = false;
+                btn.textContent = '📬 Send OTP to Email';
+                msg.innerHTML = '<div class="alert alert-error">❌ ' + e.message + '</div>';
+            }
+        }
+
+        async function verifyOTP() {
+            const code = document.getElementById('otpInput').value.trim();
+            const msg = document.getElementById('msg');
+            
+            if (!code || code.length < 6) {
+                msg.innerHTML = '<div class="alert alert-error">❌ Enter 6-digit OTP</div>';
+                return;
+            }
+            
+            try {
+                await apiRequest('/auth/verify-otp', 'POST', { email: userEmail, code }, false);
+                userOTP = code;
+                goStep(3);
+                msg.innerHTML = '<div class="alert alert-success">✅ OTP verified!</div>';
+            } catch(e) {
+                msg.innerHTML = '<div class="alert alert-error">❌ ' + e.message + '</div>';
+            }
+        }
+
+        async function resetPassword() {
+            const np = document.getElementById('newpass').value;
+            const cp = document.getElementById('confirmpass').value;
+            const msg = document.getElementById('msg');
+            
+            if (!np || np.length < 6) {
+                msg.innerHTML = '<div class="alert alert-error">❌ Password must be at least 6 characters</div>';
+                return;
+            }
+            if (np !== cp) {
+                msg.innerHTML = '<div class="alert alert-error">❌ Passwords do not match</div>';
+                return;
+            }
+            
+            try {
+                const res = await apiRequest('/auth/reset-password', 'POST',
+                    { email: userEmail, code: userOTP, new_password: np }, false);
+                msg.innerHTML = '<div class="alert alert-success">✅ ' + res.message + '</div>';
+                setTimeout(() => window.location.href = '/login', 2000);
+            } catch(e) {
+                msg.innerHTML = '<div class="alert alert-error">❌ ' + e.message + '</div>';
+            }
+        }
+    </script>
+    <script src="/static/js/travel-bg.js"></script>
+</body>
+</html>

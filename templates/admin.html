@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — GO-TRAVEL</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .admin-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+        .admin-tab { padding:10px 18px; background:white; border:2px solid var(--border);
+            border-radius:8px; cursor:pointer; font-weight:600; color:var(--navy); }
+        .admin-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+        .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:24px; }
+        .stat-box { background:white; padding:20px; border-radius:12px; box-shadow:var(--shadow);
+            border-left:4px solid var(--orange); }
+        .stat-box .num { font-size:28px; font-weight:800; color:var(--navy); }
+        .stat-box .label { font-size:13px; color:var(--muted); margin-top:4px; }
+        .data-table { width:100%; border-collapse:collapse; background:white;
+            border-radius:12px; overflow:hidden; box-shadow:var(--shadow); }
+        .data-table th { background:var(--navy); color:white; padding:12px; text-align:left; font-size:13px; }
+        .data-table td { padding:10px 12px; border-bottom:1px solid #eee; font-size:13px; }
+        .data-table tr:hover { background:#f9f9f9; }
+        .table-wrap { overflow-x:auto; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">GO<span>-TRAVEL</span> Admin</div>
+        <div class="nav-links">
+            <span id="welcome" style="opacity:.9;"></span>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 style="color:var(--navy);margin-bottom:20px;">Admin Dashboard</h2>
+
+        <!-- Stats -->
+        <div class="stat-grid" id="stats"></div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+            <div class="admin-tab active" onclick="loadTab('users', this)">Users</div>
+            <div class="admin-tab" onclick="loadTab('bookings', this)">Bookings</div>
+            <div class="admin-tab" onclick="loadTab('payments', this)">Payments</div>
+            <div class="admin-tab" onclick="loadTab('trips', this)">Trips</div>
+            <div class="admin-tab" onclick="loadTab('hotels', this)">Hotels</div>
+            <div class="admin-tab" onclick="loadTab('reviews', this)">Reviews</div>
+            <div class="admin-tab" onclick="loadTab('logs', this)">Activity Logs</div>
+        </div>
+
+        <div class="table-wrap"><div id="tableArea">Loading...</div></div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        requireAuth();
+        const user = getUser();
+        if (!user || user.is_admin !== 1) { window.location.href = "/login"; }
+        if (user) document.getElementById("welcome").textContent = "Hi, " + user.name;
+
+        async function loadStats() {
+            try {
+                const s = await apiRequest("/admin/stats");
+                document.getElementById("stats").innerHTML =
+                    statBox(s.total_users, "Total Users") +
+                    statBox(s.total_bookings, "Total Bookings") +
+                    statBox(s.confirmed_bookings, "Confirmed") +
+                    statBox("INR " + s.total_revenue, "Revenue") +
+                    statBox(s.total_trips, "Trips Planned") +
+                    statBox(s.total_hotels, "Hotels");
+            } catch (e) { console.error(e); }
+        }
+        function statBox(num, label) {
+            return '<div class="stat-box"><div class="num">' + num + '</div>' +
+                   '<div class="label">' + label + '</div></div>';
+        }
+
+        async function loadTab(name, el) {
+            document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+            if (el) el.classList.add("active");
+            const area = document.getElementById("tableArea");
+            area.innerHTML = "Loading...";
+            try {
+                const data = await apiRequest("/admin/" + name);
+                if (!data.length) { area.innerHTML = "<p>No records found.</p>"; return; }
+                const cols = Object.keys(data[0]);
+                let html = '<table class="data-table"><thead><tr>';
+                cols.forEach(c => html += '<th>' + c.replace(/_/g, ' ').toUpperCase() + '</th>');
+                html += '</tr></thead><tbody>';
+                data.forEach(row => {
+                    html += '<tr>';
+                    cols.forEach(c => html += '<td>' + row[c] + '</td>');
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                area.innerHTML = html;
+            } catch (e) {
+                area.innerHTML = '<div class="alert alert-error">' + e.message + '</div>';
+            }
+        }
+
+        loadStats();
+        loadTab('users', document.querySelector('.admin-tab'));
+    </script>
+    <script src="/static/js/travel-bg.js"></script>
+</body>
+</html>
