@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GO-TRAVEL - AI-Powered Travel Booking Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF8C42;
+            --dark: #1a2847;
+            --dark-light: #2d3e5f;
+            --light: #f8f9fa;
+            --green: #4ade80;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 140, 66, 0.1);
+            border-radius: 50%;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            background: var(--primary);
+            padding: 12px 16px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .header-subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .badge-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+        }
+
+        section.alt {
+            background: var(--light);
+        }
+
+        .section-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark);
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 1.1em;
+            margin-bottom: 60px;
+        }
+
+        .screenshots-container {
+            display: grid;
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .screenshot-item {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .screenshot-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 12px 32px rgba(255, 140, 66, 0.15);
+        }
+
+        .screenshot-label {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            padding: 15px 25px;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .screenshot-label span {
+            font-size: 1.3em;
+        }
+
+        .screenshot-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: linear-gradient(135deg, #f0f1f3 0%, #e8eaed 100%);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 16px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(255, 140, 66, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            color: var(--dark);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-table th {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .info-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-table tr:hover td {
+            background: var(--light);
+        }
+
+        footer {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 100px;
+        }
+
+        footer p {
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2em; }
+            .section-title { font-size: 1.8em; }
+            .header { padding: 50px 20px; }
+            section { padding: 50px 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">✈️</div>
+                <h1>GO-TRAVEL</h1>
+            </div>
+            <p class="header-subtitle">🤖 AI-Powered Travel Booking Platform</p>
+            <p style="font-size: 1em; opacity: 0.85; margin-top: 20px;">
+                Intelligent travel recommendations, seamless booking experience, and personalized itinerary planning powered by cutting-edge AI.
+            </p>
+            <div class="badge-group">
+                <span class="badge">🎓 MCA Final Year Project</span>
+                <span class="badge">⚡ FastAPI + SQLite</span>
+                <span class="badge">🧠 CrewAI + Llama 3</span>
+                <span class="badge">✅ Production Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- PROJECT INFO -->
+    <section class="container alt">
+        <h2 class="section-title">📋 Project Information</h2>
+        <table class="info-table">
+            <thead>
+                <tr>
+                    <th>📌 Detail</th>
+                    <th>📊 Information</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Student</strong></td>
+                    <td>Ankit Aryan</td>
+                </tr>
+                <tr>
+                    <td><strong>Enrollment</strong></td>
+                    <td>24326711015</td>
+                </tr>
+                <tr>
+                    <td><strong>College</strong></td>
+                    <td>CIMAGE Center of Digital Technology and Entrepreneurship, Patna</td>
+                </tr>
+                <tr>
+                    <td><strong>University</strong></td>
+                    <td>Aryabhatta Knowledge University, Patna</td>
+                </tr>
+                <tr>
+                    <td><strong>Faculty Guide</strong></td>
+                    <td>Prof. Dr. Amit Kumar Shukla</td>
+                </tr>
+                <tr>
+                    <td><strong>Course</strong></td>
+                    <td>Master of Computer Applications (MCA)</td>
+                </tr>
+                <tr>
+                    <td><strong>Session</strong></td>
+                    <td>2024-2026</td>
+                </tr>
+                <tr>
+                    <td><strong>Status</strong></td>
+                    <td>✅ Completed & Production Ready</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="container">
+        <h2 class="section-title">✨ Key Features</h2>
+        <p class="section-subtitle">Powerful capabilities that make travel planning effortless</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered Recommendations</h3>
+                <p>Multi-agent CrewAI system with Researcher & Planner agents for intelligent suggestions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Smart Destination Search</h3>
+                <p>Advanced location-based search with filters and personalized preferences</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✈️</div>
+                <h3>Flight & Hotel Integration</h3>
+                <p>Real-time availability and booking for flights and accommodations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💳</div>
+                <h3>Secure Payment Processing</h3>
+                <p>Razorpay integration for safe and reliable transactions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📧</div>
+                <h3>Email Notifications</h3>
+                <p>SendGrid integration for booking confirmations and updates</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3>Robust Authentication</h3>
+                <p>OTP-based verification and JWT token management</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>User Dashboard</h3>
+                <p>Track bookings, manage profiles, and view travel history</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👨‍💼</div>
+                <h3>Admin Panel</h3>
+                <p>Comprehensive dashboard for system management and analytics</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SCREENSHOTS -->
+    <section class="container alt">
+        <h2 class="section-title">🖼️ Platform Showcase</h2>
+        <p class="section-subtitle">Explore the GO-TRAVEL user interface</p>
+        
+        <div class="screenshots-container">
+            <!-- Screenshot 1 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🌟</span> AI-Powered Homepage
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_21_05_AM.png" alt="Landing Page" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 2 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🎯</span> Destination Showcase & Search
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_23_14_AM.png" alt="Popular Destinations" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 3 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🏨</span> Find Hotels - Browse & Book
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_22_16_AM.png" alt="Find Hotels" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 4 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>✈️</span> AI-Powered Trip Planning
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_22_51_AM.png" alt="Trip Planning" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 5 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>💬</span> AI Travel Assistant - Smart Chat
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_23_39_AM.png" alt="AI Assistant" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 6 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🔐</span> Secure Password Management
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_23_01_AM.png" alt="Password Management" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 7 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>💳</span> Payment Methods & Card Management
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_24_27_AM.png" alt="Payment Methods" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 8 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>📅</span> Interactive Date Picker
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_24_37_AM.png" alt="Date Picker" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 9 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>📆</span> Date Range Selection
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_24_48_AM.png" alt="Date Range" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 10 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🛒</span> Secure Razorpay Checkout
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_21_21_AM.png" alt="Checkout" class="screenshot-img">
+            </div>
+
+            <!-- Screenshot 11 -->
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    <span>🌍</span> Popular Destinations Grid
+                </div>
+                <img src="https://raw.githubusercontent.com/ankitaryan07/GO-TRAVEL/main/GO-TRAVEL_images/Screenshot_2026-07-26_at_8_21_48_AM.png" alt="Destinations Grid" class="screenshot-img">
+            </div>
+        </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section class="container">
+        <h2 class="section-title">🛠️ Technology Stack</h2>
+        <p class="section-subtitle">Modern, production-grade technologies</p>
+        
+        <div class="features-grid" style="margin-top: 50px;">
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3>Frontend</h3>
+                <p>HTML5, CSS3, JavaScript, Responsive Design</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Backend</h3>
+                <p>FastAPI, SQLite, SQLAlchemy ORM, Python 3.8+</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>AI & ML</h3>
+                <p>CrewAI, Llama 3, Natural Language Processing</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Security</h3>
+                <p>OTP, JWT, bcrypt, CORS, Input Validation</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>🎓 MCA Final Year Project</strong></p>
+        <p>Aryabhatta Knowledge University, Patna</p>
+        <p>Student: <strong>Ankit Aryan</strong> | Enrollment: <strong>24326711015</strong></p>
+        <p>College: <strong>CIMAGE Center of Digital Technology and Entrepreneurship</strong></p>
+        <p>Made with ❤️ by Ankit Aryan</p>
+        <p><strong>© 2026 - All Rights Reserved</strong></p>
+        <p style="margin-top: 15px; opacity: 0.8;">Last Updated: July 26, 2026 | Status: ✅ Production Ready</p>
+    </footer>
+</body>
+</html>
