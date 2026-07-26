@@ -1,0 +1,39 @@
+════════════════════════════════════════
+  GO-TRAVEL — Destination Images Guide
+════════════════════════════════════════
+
+YE FOLDER MEIN IMAGES DAALO:
+  gotravel/static/img/
+
+FILE NAMES EXACTLY YAISE HONGE:
+  dest_goa.jpg
+  dest_rajasthan.jpg
+  dest_kerala.jpg
+  dest_manali.jpg
+  dest_delhi.jpg
+  dest_rishikesh.jpg
+  dest_darjeeling.jpg
+  dest_varanasi.jpg
+  dest_bihar.jpg
+
+RECOMMENDED SIZE:
+  Width:  800px ya zyada
+  Height: 500px ya zyada
+  Format: JPG ya WEBP (koi bhi chalta hai)
+
+FREE IMAGES KAHAN SE MILEGI:
+  1. https://unsplash.com  → Search "Goa beach", "Rajasthan fort" etc.
+  2. https://pexels.com    → Same search
+  3. Google Images → Tools → Size: Large → Download
+
+STEPS:
+  1. Image download karo
+  2. Rename karo (e.g., dest_goa.jpg)
+  3. Is folder mein paste karo: gotravel/static/img/
+  4. Server restart karo (Ctrl+C → python3 -m uvicorn app.main:app --reload)
+  5. Website refresh karo - images dikhengi!
+
+NOTE:
+  Agar image nahi hai to colored gradient background dikhega.
+  App crash nahi karega - graceful fallback hai.
+════════════════════════════════════════

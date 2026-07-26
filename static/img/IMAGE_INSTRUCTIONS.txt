@@ -1,0 +1,23 @@
+DESTINATION IMAGES KAISE DALE:
+================================
+Niche diye file names se images is folder mein daalo:
+
+  dest_goa.jpg        → Goa beaches ki photo
+  dest_rajasthan.jpg  → Rajasthan fort ki photo
+  dest_kerala.jpg     → Kerala backwaters ki photo
+  dest_manali.jpg     → Manali mountains ki photo
+  dest_delhi.jpg      → Delhi Red Fort/India Gate photo
+  dest_rishikesh.jpg  → Rishikesh Ganga/rafting photo
+  dest_darjeeling.jpg → Darjeeling tea garden photo
+  dest_varanasi.jpg   → Varanasi ghats photo
+  dest_bihar.jpg      → Bihar Bodh Gaya/Nalanda photo
+
+RECOMMENDED IMAGE SIZE: 400x250px ya isse bada
+FORMAT: JPG ya WEBP dono chalega
+
+KAHAN SE DOWNLOAD KARO (FREE):
+- https://unsplash.com  (search destination name)
+- https://pexels.com
+- Google Images → Download
+
+IMAGE DALNE KE BAAD: Server restart karo (Ctrl+C phir python3 -m uvicorn ...)
